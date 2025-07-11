@@ -1,0 +1,49 @@
+name: "🛠️  FourKa_AI 이슈 생성"
+description: "✨  FourKa_AI Repo에 새로운 이슈를 생성합니다."
+title: "📌 이슈 제목을 입력해주세요"
+labels:
+  - refactor
+body:
+
+  - type: input
+    id: description
+    attributes:
+      label: "📄 이슈 개요 (Description)"
+      description: "이슈에 대한 간략한 설명을 작성해주세요."
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "📝 상세 내용 (Details)"
+      description: "이슈의 배경, 목표 및 필요한 추가 정보를 입력해주세요."
+      value: |
+        - 이슈의 주요 목표:
+        - 예상되는 결과:
+        - 관련 정보:
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: "✅ 체크리스트 (Tasks)"
+      description: "해당 이슈와 관련된 작업 목록을 작성해주세요."
+      value: |
+        - [ ] 작업 1
+        - [ ] 작업 2
+        - [ ] 작업 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: "📚 관련 자료 (References)"
+      description: "이슈와 관련된 문서, 링크, 참고 자료 등을 기재해주세요."
+      value: |
+        - 📌 Reference 1: [링크 또는 설명]
+        - 📌 Reference 2: [링크 또는 설명]
+    validations:
+      required: false
