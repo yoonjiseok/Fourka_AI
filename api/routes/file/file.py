@@ -15,7 +15,7 @@ security_scheme = HTTPBearer()
 
 @chat_router.post("/pdf/upload")
 async def upload_pdf(
-        token: Annotated[..., HTTPAuthorizationCredentials, Security(security_scheme)],
+        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
         file: Annotated[UploadFile, File(..., description="업로드할 PDF 파일")]
 ):
     result = file_service.read_file(file)
@@ -23,7 +23,7 @@ async def upload_pdf(
 
 @chat_router.post("/pdf/update")
 async def update_pdf(
-        token: Annotated[..., HTTPAuthorizationCredentials, Security(security_scheme)],
+        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
         fileinfo: fileDTO.UpdateDTO
 ):
     result = file_service.read_file(fileinfo)
