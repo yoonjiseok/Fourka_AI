@@ -1,6 +1,6 @@
 name: "🛠️  FourKa_AI 기능 이슈 생성"
 description: "✨  FourKa_AI Repo에 새로운 이슈를 생성합니다."
-title: "[FIX] 📌 이슈 제목을 입력해주세요"
+title: "[FEATURE] 📌 이슈 제목을 입력해주세요"
 labels:
   - feat
 body:
