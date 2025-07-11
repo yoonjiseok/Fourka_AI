@@ -1,6 +1,6 @@
 name: "🛠️  FourKa_AI 리팩터링 이슈 생성"
 description: "✨  FourKa_AI Repo에 새로운 이슈를 생성합니다."
-title: "📌 이슈 제목을 입력해주세요"
+title: "[REFACTOR] 📌 이슈 제목을 입력해주세요"
 labels:
   - refactor
 body:
