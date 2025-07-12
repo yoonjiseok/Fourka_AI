@@ -1,6 +1,3 @@
-# database/session.py 또는 database/db.py
-# 👈 기존 내용을 모두 지우고 이 코드로 교체하세요.
-
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from config import settings # 설정 파일
