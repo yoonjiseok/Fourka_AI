@@ -43,7 +43,7 @@ class Document(Base):
     doc_folder_id: Mapped[int] = mapped_column(ForeignKey(Document_folder.doc_folder_id), nullable=False)
     title: Mapped[str | None] = mapped_column() # nullable=True는 | None으로 표현
     url: Mapped[str | None] = mapped_column()
-    Field: Mapped[str | None] = mapped_column() # 버전
+    field: Mapped[str | None] = mapped_column() # 버전
     is_used: Mapped[bool] = mapped_column(default=False)
     commit_message: Mapped[str | None] = mapped_column()
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
