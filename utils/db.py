@@ -1,6 +1,7 @@
-from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from config import settings # 설정 파일
+from typing import AsyncGenerator
+
+from config import settings  # 설정 파일
 
 # 1. create_async_engine 사용
 async_engine = create_async_engine(settings.DB_URL)
