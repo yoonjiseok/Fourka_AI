@@ -1,8 +1,6 @@
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import models
-
 
 class FileRepository:
     def __init__(self, db: AsyncSession):
@@ -12,9 +10,10 @@ class FileRepository:
         """
         비동기 방식으로 문서의 제목을 업데이트하고 변경사항을 커밋합니다.
         """
+        from database.models import Document
         stmt = (
-            update(models.Document)
-            .where(models.Document.doc_id == doc_id)
+            update(Document)
+            .where(Document.doc_id == doc_id)
             .values(title=title)
         )
 
