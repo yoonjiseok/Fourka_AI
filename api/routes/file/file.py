@@ -12,15 +12,6 @@ file_router = APIRouter(prefix="/api/files", tags=["files"])
 
 security_scheme = HTTPBearer()
 
-
-@file_router.post("/pdf/upload")
-async def upload_pdf(
-        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-        file: Annotated[UploadFile, File(..., description="업로드할 PDF 파일")]
-):
-    result = file_service.read_file(file)
-
-
 @file_router.patch("/pdf/update")
 async def update_pdf(
         token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
