@@ -1,17 +1,12 @@
 import datetime
-from typing import List
-
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
-    Boolean,
-    DateTime,
     ForeignKey,
-    Integer,
-    String,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from typing import List
 
 
 # 1. 모든 모델이 상속할 Base 클래스 정의
