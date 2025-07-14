@@ -2,7 +2,7 @@ from fastapi import APIRouter, Security, UploadFile, File, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
 
-from api.dependencies.dependency import get_file_service
+from dependencies.dependency import get_file_service
 from api.routes.file import fileDTO
 from service.file import file_service
 from service.file.file_service import FileService
