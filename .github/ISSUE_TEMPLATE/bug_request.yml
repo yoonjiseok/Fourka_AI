@@ -2,7 +2,7 @@ name: "🛠️  FourKa_AI 버그 이슈 생성"
 description: "✨  FourKa_AI Repo에 새로운 이슈를 생성합니다."
 title: "[BUG] 📌 이슈 제목을 입력해주세요"
 labels:
-  - feat
+  - bug
 body:
 
   - type: input
