@@ -4,6 +4,7 @@ from typing import Annotated
 
 from dependencies.dependency import get_document_service
 from api.routes.document import documentDTO
+from model.response_models import SuccessResponse
 from service.document.document_service import DocumentService
 
 document_router = APIRouter(prefix="/api/documents", tags=["files"])
@@ -42,7 +43,7 @@ async def upload_pdf(
         commit_message=commit_message
     )
     
-    await document_service.upload_pdf(
+    doc_id = await document_service.upload_pdf(
         file=file,
         title=fileinfo.title,
         version=fileinfo.version,
@@ -50,4 +51,8 @@ async def upload_pdf(
         commit_message=fileinfo.commit_message
     )
 
-    return {"message": "File uploaded successfully"}
+    return SuccessResponse(
+        result={"doc_id": doc_id},
+        message="File uploaded successfully",
+        code=200
+    )
