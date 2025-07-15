@@ -18,12 +18,16 @@ async def update_pdf(
         fileinfo: documentDTO.UpdateDTO,
         document_service: DocumentService = Depends(get_document_service)
 ):
-    await document_service.update_file_name(
+    doc_id, doc_title = await document_service.update_file_name(
         file_id=fileinfo.doc_id,
         title=fileinfo.title
     )
 
-    return {"message": "File information updated successfully"}
+    return SuccessResponse(
+        result={"doc_id": doc_id, "title": doc_title},
+        message="File information updated successfully",
+        code=200
+    )
 
 
 @document_router.post("/pdf/upload")
@@ -43,7 +47,7 @@ async def upload_pdf(
         commit_message=commit_message
     )
     
-    doc_id = await document_service.upload_pdf(
+    doc_id, doc_title, doc_version, doc_created_at = await document_service.upload_pdf(
         file=file,
         title=fileinfo.title,
         version=fileinfo.version,
@@ -52,7 +56,7 @@ async def upload_pdf(
     )
 
     return SuccessResponse(
-        result={"doc_id": doc_id},
+        result={"doc_id": doc_id, "title": doc_title, "version": doc_version, "created_at": doc_created_at},
         message="File uploaded successfully",
         code=200
     )
