@@ -3,14 +3,14 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from utils.db import get_db
-from database.repository.file_repository import FileRepository
-from service.file.file_service import FileService
+from database.repository.document_repository import DocumentRepository
+from service.document.document_service import DocumentService
 
-def get_file_repository(db: AsyncSession = Depends(get_db)) -> FileRepository:
-    return FileRepository(db)
+def get_document_repository(db: AsyncSession = Depends(get_db)) -> DocumentRepository:
+    return DocumentRepository(db)
 
-def get_file_service(repo: FileRepository = Depends(get_file_repository)) -> FileService:
-    return FileService(repo)
+def get_document_service(repo: DocumentRepository = Depends(get_document_repository)) -> DocumentService:
+    return DocumentService(repo)
 
 
 """
