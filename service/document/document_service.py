@@ -8,7 +8,9 @@ class DocumentService:
 
     async def update_file_name(self, file_id: int, title: str):
         # 파일 제목이라던가 그런거 검증로직 작성
-         await self.document_repository.update_file_name(file_id, title)
+         doc_id, doc_title = await self.document_repository.update_file_name(file_id, title)
+         return doc_id, doc_title
+         
 
     async def upload_pdf(self, file: UploadFile, title: str, version: str, folder_id: int, commit_message: str):
         # temp_file_storage 디렉토리 경로
@@ -25,11 +27,11 @@ class DocumentService:
                 buffer.write(chunk)
 
         # DB에 저장
-        doc_id = await self.document_repository.create_document(
+        doc_id, doc_title, doc_version, doc_created_at = await self.document_repository.create_document(
             title=title,
             version=version,
             folder_id=folder_id,
             commit_message=commit_message
         )
 
-        return doc_id
+        return doc_id, doc_title, doc_version, doc_created_at
