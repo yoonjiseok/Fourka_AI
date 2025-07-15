@@ -25,9 +25,11 @@ class DocumentService:
                 buffer.write(chunk)
 
         # DB에 저장
-        await self.document_repository.create_document(
+        doc_id = await self.document_repository.create_document(
             title=title,
             version=version,
             folder_id=folder_id,
             commit_message=commit_message
         )
+
+        return doc_id
