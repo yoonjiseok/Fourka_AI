@@ -29,7 +29,7 @@ class Folder(Base):
 
     # Mapped 타입 힌트 추가 및 mapped_column 사용
     folder_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"))
+    company_id: Mapped[int] = mapped_column(ForeignKey(Company.company_id))
     name: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())
 
@@ -64,7 +64,7 @@ class Chunk(Base):
     chunk_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     doc_id: Mapped[int] = mapped_column(ForeignKey(Document.doc_id))
     doc_folder_id: Mapped[int] = mapped_column(ForeignKey(Folder.folder_id))
-    company_id: Mapped[int | None] = mapped_column(ForeignKey("company.company_id"))
+    company_id: Mapped[int | None] = mapped_column(ForeignKey(Company.company_id))
     chunk_index: Mapped[int] = mapped_column(default=0)
     embedding: Mapped[list | None] = mapped_column(Vector) # Vector 타입은 리스트로 표현
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB)
