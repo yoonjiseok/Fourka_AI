@@ -31,6 +31,7 @@ env/
 ENV/
 .venv/
 .env/
+fourkachip/
 
 # IDE
 .idea/
@@ -67,3 +68,7 @@ dmypy.json
 
 # pytest
 .pytest_cache/
+config.py
+
+#venv
+
