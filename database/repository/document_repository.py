@@ -1,6 +1,6 @@
 from sqlalchemy import update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from database.models import Document
 
 class DocumentRepository:
     def __init__(self, db: AsyncSession):
@@ -10,7 +10,6 @@ class DocumentRepository:
         """
         비동기 방식으로 문서의 제목을 업데이트하고 변경사항을 커밋합니다.
         """
-        from database.models import Document
         
         # 문서 조회
         document = await self.db.get(Document, doc_id)
@@ -34,3 +33,5 @@ class DocumentRepository:
         
         self.db.add(new_document)
         await self.db.commit()
+        await self.db.refresh(new_document)
+        return new_document.doc_id
