@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Security, UploadFile, File, Depends, Form
+from fastapi import APIRouter, Security, UploadFile, File, Depends, Form, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
 
 from dependencies.dependency import get_document_service
 from api.routes.document import documentDTO
-from model.response_models import SuccessResponse
 from service.document.document_service import DocumentService
+from model.response_models import SuccessResponse
 
 document_router = APIRouter(prefix="/api/documents", tags=["files"])
 
@@ -18,7 +18,7 @@ async def update_pdf(
         fileinfo: documentDTO.UpdateDTO,
         document_service: DocumentService = Depends(get_document_service)
 ):
-    doc_id, doc_title = await document_service.update_file_name(
+    await document_service.update_file_name(
         file_id=fileinfo.doc_id,
         title=fileinfo.title
     )
@@ -30,8 +30,9 @@ async def update_pdf(
     )
 
 
-@document_router.post("/pdf/upload")
+@document_router.post("/pdf/upload", response_model=SuccessResponse)
 async def upload_pdf(
+    background_tasks: BackgroundTasks,
     title: str = Form(...),
     version: str = Form(...),
     folder_id: int = Form(...),
@@ -39,24 +40,33 @@ async def upload_pdf(
     file: UploadFile = File(...),
     document_service: DocumentService = Depends(get_document_service)
 ):
-    # Form 데이터를 DTO로 변환
-    fileinfo = documentDTO.UploadDTO(
+    print(f"[API_ROUTE] Starting PDF upload endpoint for file: {file.filename}")
+    
+    doc_id, doc_title, doc_version, doc_created_at, save_path = await document_service.upload_pdf(
+        file=file,
         title=title,
         version=version,
         folder_id=folder_id,
         commit_message=commit_message
     )
     
-    doc_id, doc_title, doc_version, doc_created_at = await document_service.upload_pdf(
-        file=file,
-        title=fileinfo.title,
-        version=fileinfo.version,
-        folder_id=fileinfo.folder_id,
-        commit_message=fileinfo.commit_message
+    print(f"[API_ROUTE] Service upload_pdf completed. Adding background task...")
+    
+    # 백그라운드에서 청크 분석 및 저장
+    background_tasks.add_task(
+        document_service.process_pdf_chunks,
+        save_path, title, version, folder_id, commit_message, doc_id
     )
-
+    
+    print(f"[API_ROUTE] Background task added. Sending response to client now!")
+    
     return SuccessResponse(
-        result={"doc_id": doc_id, "title": doc_title, "version": doc_version, "created_at": doc_created_at},
+        result={
+            "doc_id": doc_id,
+            "title": doc_title,
+            "version": doc_version,
+            "created_at": doc_created_at
+        },
         message="File uploaded successfully",
         code=200
     )
