@@ -60,6 +60,7 @@ async def upload_pdf(
     
     print(f"[API_ROUTE] Background task added. Sending response to client now!")
     
+    # 사용자에게 먼저 파일 정보 반환
     return SuccessResponse(
         result={
             "doc_id": doc_id,
