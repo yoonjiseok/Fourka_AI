@@ -61,12 +61,9 @@ class Document(Base):
 class Chunk(Base):
     __tablename__ = "chunk"
 
-    chunk_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    doc_id: Mapped[int] = mapped_column(ForeignKey(Document.doc_id))
-    doc_folder_id: Mapped[int] = mapped_column(ForeignKey(Folder.folder_id))
-    company_id: Mapped[int | None] = mapped_column(ForeignKey(Company.company_id))
-    chunk_index: Mapped[int] = mapped_column(default=0)
-    embedding: Mapped[list | None] = mapped_column(Vector) # Vector 타입은 리스트로 표현
+    chunk_id: Mapped[int] = mapped_column(primary_key=True)
+    doc_id: Mapped[int] = mapped_column(ForeignKey(Document.doc_id), primary_key=True)
+    embedding: Mapped[list | None] = mapped_column(Vector(1536)) # Vector 타입은 리스트로 표현
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
 
