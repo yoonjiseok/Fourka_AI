@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Security, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
+from fastapi.params import Path
 
 from api.routes.file import fileDTO
 from dependencies.dependency import get_file_service
@@ -24,11 +25,11 @@ async def update_pdf(
 
     return {"message": "File information updated successfully"}
 
-@file_router.get("/version-history")
+@file_router.get("/version-history/{folder_id}")
 async def get_version_history(
         token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-        folder_info: fileDTO.folderDTO,
-        file_service: FileService = Depends(get_file_service)
+        file_service: FileService = Depends(get_file_service),
+        folder_id: int = Path(..., title="Folder ID")
 ):
-    documents= await file_service.get_all_versions(folder_id=folder_info.folder_id)
+    documents= await file_service.get_all_versions(folder_id=folder_id)
     return documents
