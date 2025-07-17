@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from pydantic import BaseModel, Field
-from typing import Optional, Any, Dict
+from typing import Optional, Any
+
 
 # 모든 응답의 기본이 되는 모델, 예외처리에서도 사용
 class BaseResponse(BaseModel):

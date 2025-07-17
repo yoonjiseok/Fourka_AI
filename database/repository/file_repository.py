@@ -22,7 +22,7 @@ class FileRepository:
     async def get_all_versions_by_folder_id(self, folder_id: int) -> Sequence[Document]:
         stmt = (
             select(Document)
-            .where(Document.doc_folder_id==folder_id)
+            .where(Document.folder_id==folder_id)
             .order_by(Document.created_at)
         )
 

@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import update, insert, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Document, Chunk
@@ -70,4 +72,14 @@ class DocumentRepository:
             print("Embedding after save: None")
         
         return new_chunk
-        
+
+    async def get_all_versions_by_folder_id(self, folder_id: int) -> Sequence[Document]:
+        stmt = (
+            select(Document)
+            .where(Document.folder_id==folder_id)
+            .order_by(Document.created_at)
+        )
+
+        result = await self.db.execute(stmt)
+        documents: Sequence[Document] = result.scalars().all()
+        return documents

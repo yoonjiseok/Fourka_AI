@@ -11,6 +11,8 @@ from typing import List
 
 # 1. 모든 모델이 상속할 Base 클래스 정의
 class Base(DeclarativeBase):
+    class Config:
+        from_attributes = True
     pass
 
 
