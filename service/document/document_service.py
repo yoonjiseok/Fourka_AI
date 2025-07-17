@@ -202,3 +202,7 @@ class DocumentService:
             print(f"Explained variance ratio: {explained_variance_ratio:.4f}")
             
             return reduced_array.tolist()
+
+
+    async def get_all_versions(self, folder_id: int):
+        return await self.document_repository.get_all_versions_by_folder_id(folder_id)

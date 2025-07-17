@@ -10,3 +10,7 @@ class UploadDTO(BaseModel):
     version : str
     folder_id : int
     commit_message : str
+
+class folderDTO(BaseModel):
+    folder_id: int
+

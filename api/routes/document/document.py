@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Security, UploadFile, File, Depends, Form, BackgroundTasks
+from fastapi import APIRouter, Security, UploadFile, File, Depends, Form, BackgroundTasks, Path
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
 
-from dependencies.dependency import get_document_service
 from api.routes.document import documentDTO
-from service.document.document_service import DocumentService
+from dependencies.dependency import get_document_service
+from model import response_models
 from model.response_models import SuccessResponse
+from service.document.document_service import DocumentService
 
 document_router = APIRouter(prefix="/api/documents", tags=["files"])
 
@@ -15,16 +17,16 @@ security_scheme = HTTPBearer()
 @document_router.patch("/pdf/update")
 async def update_pdf(
         token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-        fileinfo: documentDTO.UpdateDTO,
+        documentDTO: documentDTO.UpdateDTO,
         document_service: DocumentService = Depends(get_document_service)
 ):
     await document_service.update_file_name(
-        file_id=fileinfo.doc_id,
-        title=fileinfo.title
+        file_id=documentDTO.doc_id,
+        title=documentDTO.title
     )
 
     return SuccessResponse(
-        result={"doc_id": doc_id, "title": doc_title},
+        result={"doc_id": documentDTO.doc_id, "title": documentDTO.title},
         message="File information updated successfully",
         code=200
     )
@@ -71,3 +73,14 @@ async def upload_pdf(
         message="File uploaded successfully",
         code=200
     )
+
+@document_router.get("/version-history/{folder_id}", response_model=response_models.SuccessResponse)
+async def get_version_history(
+        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
+        document_service: DocumentService = Depends(get_document_service),
+        folder_id: int = Path(..., title="Folder ID"),
+
+):
+    documents= await document_service.get_all_versions(folder_id=folder_id)
+    encoded_documents = jsonable_encoder(documents)
+    return response_models.SuccessResponse(result = encoded_documents)
