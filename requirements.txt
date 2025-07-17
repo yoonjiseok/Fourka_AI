@@ -54,3 +54,15 @@ uvicorn==0.35.0
 uvloop==0.21.0
 watchfiles==1.1.0
 websockets==15.0.1
+# PDF 처리 및 텍스트 추출
+unstructured[pdf]>=0.12.0
+unstructured[local-inference]>=0.12.0
+# 텍스트 처리 및 정규표현
+regex>=2023.0.0
+# JSON 처리
+json5>=0.9.0
+# 파일 시스템 및 경로 처리
+pathlib>=1.0.0
+#gemini
+google-genai>=1.0.0
+scikit-learn>=1.0.0
