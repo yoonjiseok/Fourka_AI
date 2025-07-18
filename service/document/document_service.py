@@ -1,15 +1,17 @@
-import os
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from database.repository.document_repository import DocumentRepository
-from fastapi import UploadFile
-from unstructured.partition.auto import partition
-from unstructured.chunking.title import chunk_by_title
-from utils.chunk_postprocess import merge_incomplete_chunks, validate_chunk_quality, add_overlap_to_chunks, clean_text
-from google import genai
-from config import settings
-from sklearn.decomposition import PCA
 import numpy as np
+import os
+from fastapi import UploadFile
+from google import genai
+from sklearn.decomposition import PCA
+from unstructured.chunking.title import chunk_by_title
+from unstructured.partition.auto import partition
+
+from config import settings
+from database.repository.document_repository import DocumentRepository
+from service.document.modify_service import compare_text
+from utils.chunk_postprocess import merge_incomplete_chunks, validate_chunk_quality, add_overlap_to_chunks, clean_text
+
 
 class DocumentService:
     def __init__(self, document_repository: DocumentRepository):
@@ -206,3 +208,22 @@ class DocumentService:
 
     async def get_all_versions(self, folder_id: int):
         return await self.document_repository.get_all_versions_by_folder_id(folder_id)
+
+    async def compare_two_docs(self, doc_id: int) -> str:
+        """
+        :param doc_id: 비교할 문서의 ID
+        :return: 두 문서의 다른점
+
+        TODO: S3 URL이 아직 활성화되지 않은 관계로 주석 처리해놓겠습니다. 그래서 아직 진짜 잘 되는지 수 없음...이런식으로 출력될 것이다 까지로만 봐주시면 될 것 같아요.
+        """
+        # using_doc_id = await self.document_repository.get_using_doc_id()
+        # main_url = await self.document_repository.get_s3_url(using_doc_id)
+        # compare_url = await self.document_repository.get_s3_url(doc_id)
+        # main_pdf = download_file_to_memory(main_url)
+        # compare_pdf = download_file_to_memory(compare_url)
+        # text = compare_text(extract_text_from_pdf(main_pdf), extract_text_from_pdf(compare_pdf))
+        main_pdf = ("""원본 사내 규정 (예시) \n제 1 장 총칙\n제 1 조 (목적) 이 규정은 주식회사 ABC (이하 "회사"라 한다)의 조직 구성원의 기본적인 근무 조건과 복무 규율을 정함을 목적으로 한다.\n제 2 조 (적용 범위) 이 규정은 회사에 소속된 모든 임직원에게 적용된다.\n제 2 장 근무 시간\n제 3 조 (근무 시간) 회사의 통상 근무 시간은 주 5일, 1일 8시간으로 한다. 단, 업무의 특성에 따라 변경될 수 있다.\n제 4 조 (휴게 시간) 근무 시간 중 1시간의 휴게 시간을 부여한다. 휴게 시간은 자유롭게 사용할 수 있다.""")
+        compare_pdf = """수정된 사내 규정 (예시)\n\n제 1 장 총칙\n제 1 조 (목적) 이 규정은 주식회사 ABC (이하 "회사"라고 칭한다)의 조직 구성원의 기본적인 근무 조건, 복무 규율 및 윤리 기준을 명확히 하여 효율적인 업무 수행을 도모함을 그 목적으로 한다.\n제 2 조 (적용 범위) 이 규정은 회사에 소속된 모든 임원 및 직원을 포함한 모든 구성원에게 적용된다.\n제 2 장 근무 시간 및 휴게\n\n제 3 조 (근무 시간) 회사의 기본적인 근무 시간은 주 5일, 1일 8시간을 원칙으로 한다. 다만, 업무의 성격이나 필요에 따라 근무 시간 및 형태가 변경될 수 있다.\n제 4 조 (휴게 시간) 근무 중에는 총 1시간의 휴게 시간이 주어진다. 휴게 시간의 사용은 원칙적으로 자유롭게 하되, 업무에 지장을 초래하지 않도록 한다."""
+        text = compare_text(main_pdf, compare_pdf)
+        print(text)
+        return text

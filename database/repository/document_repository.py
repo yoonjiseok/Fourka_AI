@@ -83,3 +83,21 @@ class DocumentRepository:
         result = await self.db.execute(stmt)
         documents: Sequence[Document] = result.scalars().all()
         return documents
+
+    async def get_s3_url(self, doc_id: int) -> str:
+        stmt = (
+            select(Document.url)
+            .where(Document.doc_id==doc_id)
+        )
+
+        result = await self.db.execute(stmt)
+        return result.scalar()
+
+    async def get_using_doc_id(self) -> int:
+        stmt = (
+            select(Document.doc_id)
+            .where(Document.is_used==True)
+        )
+
+        result = await self.db.execute(stmt)
+        return result.scalar()

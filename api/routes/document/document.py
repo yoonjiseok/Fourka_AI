@@ -84,3 +84,12 @@ async def get_version_history(
     documents= await document_service.get_all_versions(folder_id=folder_id)
     encoded_documents = jsonable_encoder(documents)
     return response_models.SuccessResponse(result = encoded_documents)
+
+@document_router.get("/modified-part/{doc_id}", response_model=response_models.SuccessResponse)
+async def get_modified_part(
+        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
+        document_service: DocumentService = Depends(get_document_service),
+        doc_id: int = Path(..., title="Document ID"),
+):
+    change_part = await document_service.compare_two_docs(doc_id=doc_id)
+    return response_models.SuccessResponse(result = change_part)
