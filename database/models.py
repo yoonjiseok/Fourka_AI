@@ -22,7 +22,7 @@ class Base(DeclarativeBase):
 class UserRole(enum.Enum):
     ADMIN = "admin"
     USER = "user"
-    GUEST = "guest"
+    Master = "master"
 
 
 # 3. 참조되는 모델들을 먼저 정의
