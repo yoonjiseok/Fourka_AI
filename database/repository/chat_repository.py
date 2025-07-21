@@ -1,7 +1,5 @@
-from sqlalchemy import select, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from pgvector.sqlalchemy import Vector
-import numpy as np
 
 class ChatRepository:
     def __init__(self, db: AsyncSession):
@@ -11,11 +9,13 @@ class ChatRepository:
         """
         주어진 임베딩과 가장 유사한 청크를 데이터베이스에서 검색합니다.
         """
-        # pgvector의 l2_distance 연산자를 사용하여 유사도 검색
-        query = text(f"""
+        # 임베딩 리스트를 pgvector가 인식할 수 있는 문자열 형태로 변환합니다.
+        embedding_str = str(embedding)
+
+        query = text("""
             SELECT
-                c.metadata_ ->> 'content' as content,
-                c.metadata_ ->> 'page_number' as page_number,
+                c.metadata ->> 'content' as content,
+                c.metadata ->> 'page_number' as page_number,
                 d.title,
                 c.embedding <-> CAST(:embedding AS vector) AS distance
             FROM chunk c
@@ -26,6 +26,7 @@ class ChatRepository:
 
         result = await self.db.execute(
             query,
-            {"embedding": np.array(embedding), "top_k": top_k}
+
+            {"embedding": embedding_str, "top_k": top_k}
         )
         return result.fetchall()

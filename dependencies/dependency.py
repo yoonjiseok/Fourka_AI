@@ -14,7 +14,6 @@ def get_document_repository(db: AsyncSession = Depends(get_db)) -> DocumentRepos
 def get_document_service(repo: DocumentRepository = Depends(get_document_repository)) -> DocumentService:
     return DocumentService(repo)
 
-# chat_repository와 서비스를 위한 의존성 주입 함수 추가
 def get_chat_repository(db: AsyncSession = Depends(get_db)) -> ChatRepository:
     return ChatRepository(db)
 

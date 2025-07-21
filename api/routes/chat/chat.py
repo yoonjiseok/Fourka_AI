@@ -13,7 +13,6 @@ security_scheme = HTTPBearer()
 
 @chat_router.post("", response_model=SuccessResponse)
 async def chatting(
-        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
         request: chatDTO.ChatRequest,
         chat_service: ChatService = Depends(get_chat_service)
 ):

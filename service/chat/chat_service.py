@@ -1,23 +1,38 @@
 from database.repository.chat_repository import ChatRepository
-from google import genai
 from config import settings
 from api.routes.chat import chatDTO
+import google.generativeai as genai
 
 class ChatService:
     def __init__(self, chat_repository: ChatRepository):
         self.chat_repository = chat_repository
+        
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.llm_model = genai.GenerativeModel('gemini-2.5-flash')
+
+        self.embedding_model_name = "models/embedding-001"
 
     async def send_chat(self, message: str) -> chatDTO.ChatResponse:
-        # 1. 사용자 질문을 임베딩으로 변환
+
         embedding = self._text_to_embedding(message)
 
-        # 2. 유사한 청크 검색
+        print(f"DEBUG: Generated embedding dimension: {len(embedding)}")
+
+
         similar_chunks = await self.chat_repository.find_similar_chunks(embedding)
 
-        # 3. LLM에 전달할 컨텍스트 생성
-        context = "\n".join([f"문서명: {chunk.title}, 페이지: {chunk.page_number}\n내용: {chunk.content}" for chunk in similar_chunks])
+        context_parts = []
+        for chunk in similar_chunks:
+            try:
+                content = chunk.content
+                title = chunk.title
+                page_number = chunk.page_number
+                context_parts.append(f"문서명: {title}, 페이지: {page_number}\n내용: {content}")
+            except AttributeError:
+                print(f"Warning: Chunk object is missing 'content' attribute. Chunk: {chunk}")
+                continue
+        
+        context = "\n".join(context_parts)
 
         # 4. 프롬프트 생성
         prompt = f"""
@@ -32,11 +47,11 @@ class ChatService:
         답변:
         """
 
-        # 5. LLM API 호출
-        response = self.model.generate_content(prompt)
 
-        # 6. 메타데이터 생성
-        metadata = [{"title": chunk.title, "page_number": chunk.page_number} for chunk in similar_chunks]
+        response = self.llm_model.generate_content(prompt)
+
+        # 메타데이터
+        metadata = [{"title": chunk.title, "page_number": str(chunk.page_number)} for chunk in similar_chunks]
 
         return chatDTO.ChatResponse(
             answer=response.text,
@@ -45,11 +60,11 @@ class ChatService:
 
     def _text_to_embedding(self, text: str) -> list:
         """
-        텍스트를 임베딩 벡터로 변환합니다.
+        텍스트를 Google의 'embedding-001' 모델을 사용하여 벡터로 변환합니다.
         """
-        embedding_result = genai.embed_content(
-            model="models/embedding-001",
+        result = genai.embed_content(
+            model=self.embedding_model_name,
             content=text,
-            task_type="retrieval_document"
+            task_type="retrieval_query"
         )
-        return embedding_result['embedding']
+        return result['embedding']
