@@ -15,6 +15,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # 1. Base 클래스 정의
 class Base(DeclarativeBase):
+    class Config:
+        from_attributes = True
     pass
 
 

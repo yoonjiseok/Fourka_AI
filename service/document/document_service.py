@@ -125,5 +125,11 @@ class DocumentService:
         )
         return result['embedding']
     
-    # _batch_reduce_embeddings 메소드는 더 이상 필요 없으므로 삭제합니다.
+
+        # ContentEmbedding 객체에서 벡터 값 추출
+        embedding_values = embedding.embeddings[0].values
+        return embedding_values
+
+    async def get_all_versions(self, folder_id: int):
+        return await self.document_repository.get_all_versions_by_folder_id(folder_id)
 
