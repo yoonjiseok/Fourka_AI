@@ -143,31 +143,32 @@ class Chat(Base):
     author: Mapped["User"] = relationship(back_populates="messages")
 
 
+# 6. Tag 모델 추가
+class Tag(Base):
+    __tablename__ = "tag"
+
+    tag_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"), nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())
+
+    # 관계(relationship)
+    company: Mapped["Company"] = relationship(back_populates="tags")
+    faqs: Mapped[List["FAQ"]] = relationship(back_populates="tag")
+
+
+# 7. FAQ 모델 추가
 class FAQ(Base):
     __tablename__ = "faq"
-    
+
     faq_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     question: Mapped[str] = mapped_column(nullable=False)
     answer: Mapped[str] = mapped_column(nullable=False)
-    embedding: Mapped[Vector] = mapped_column(Vector(1536), nullable=False)
-    company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"))
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tag.tag_id"))
+    embedding: Mapped[list | None] = mapped_column(Vector(768))  # 질문 임베딩
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"), nullable=False)
+    tag_id: Mapped[int] = mapped_column(ForeignKey(Tag.tag_id), nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())
 
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
-    
+    # 관계(relationship)
     company: Mapped["Company"] = relationship(back_populates="faqs")
     tag: Mapped["Tag"] = relationship(back_populates="faqs")
-
-
-class Tag(Base):
-    __tablename__ = "tag"
-    
-    tag_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(nullable=False)
-    company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"))
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
-    
-    faqs: Mapped[List["FAQ"]] = relationship(back_populates="tag")
-    
-    # 👇 [수정] 오타 수정 (compnay -> company)
-    company: Mapped["Company"] = relationship(back_populates="tags")

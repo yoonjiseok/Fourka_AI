@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from api.routes.chat.chat import chat_router
 from api.routes.document.document import document_router
+from api.routes.faq.faq import faq_router
+from api.routes.faq.tag import tag_router
 from database import models
 from utils.db import async_engine
 import asyncio
@@ -17,3 +19,5 @@ async def startup_event():
 
 app.include_router(chat_router)
 app.include_router(document_router)
+app.include_router(faq_router)
+app.include_router(tag_router)
