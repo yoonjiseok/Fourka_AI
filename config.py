@@ -10,5 +10,6 @@ class Settings(BaseSettings):
     TIMEZONE_LOCATION: str = "Asia/Seoul"
     DB_URL : str
     GEMINI_API_KEY : str | None = None
+    JWT_SECRET: str  # JWT 검증용 시크릿키
 
 settings = Settings()
