@@ -133,3 +133,7 @@ class DocumentService:
     async def get_all_versions(self, folder_id: int):
         return await self.document_repository.get_all_versions_by_folder_id(folder_id)
 
+
+    async def delete_pdf(self, doc_id: int):
+        deleted_doc_id = await self.document_repository.delete_pdf(doc_id)  
+        return deleted_doc_id

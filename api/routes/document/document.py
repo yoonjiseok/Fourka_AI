@@ -34,6 +34,7 @@ async def update_pdf(
 
 @document_router.post("/pdf/upload", response_model=SuccessResponse)
 async def upload_pdf(
+    token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
     background_tasks: BackgroundTasks,
     title: str = Form(...),
     version: str = Form(...),
@@ -84,3 +85,12 @@ async def get_version_history(
     documents= await document_service.get_all_versions(folder_id=folder_id)
     encoded_documents = jsonable_encoder(documents)
     return response_models.SuccessResponse(result = encoded_documents)
+
+@document_router.delete("/pdf/delete", response_model=response_models.SuccessResponse)
+async def delete_pdf(
+    token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
+    documentDTO: documentDTO.DeleteDTO,
+    document_service: DocumentService = Depends(get_document_service)
+):
+    delete_doc_id = await document_service.delete_pdf(doc_id=documentDTO.doc_id)
+    return response_models.SuccessResponse(result= {"doc_id": delete_doc_id}, message="File deleted successfully", code=200)

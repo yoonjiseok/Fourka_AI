@@ -64,6 +64,6 @@ json5>=0.9.0
 # 파일 시스템 및 경로 처리
 pathlib>=1.0.0
 #gemini
-google-genai>=1.0.0
+google-generativeai>=0.8.0
 scikit-learn>=1.0.0
 

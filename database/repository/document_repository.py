@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from sqlalchemy import update, insert, select, func
+from sqlalchemy import update, insert, select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Document, Chunk
 
@@ -83,3 +83,19 @@ class DocumentRepository:
         result = await self.db.execute(stmt)
         documents: Sequence[Document] = result.scalars().all()
         return documents
+    
+    async def delete_pdf(self, doc_id: int):
+        # 1. doc_id와 연관된 모든 청크 삭제
+        stmt = (
+            delete(Chunk)
+            .where(Chunk.doc_id==doc_id)
+        )
+        await self.db.execute(stmt)
+        
+        # 2. 해당 doc_id 문서 삭제
+        document = await self.db.get(Document, doc_id)
+        if document:
+            await self.db.delete(document)
+        await self.db.commit()
+
+        return doc_id
