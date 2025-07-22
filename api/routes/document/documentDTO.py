@@ -11,6 +11,9 @@ class UploadDTO(BaseModel):
     folder_id : int
     commit_message : str
 
+class DeleteDTO(BaseModel):
+    doc_id: int
+
 class folderDTO(BaseModel):
     folder_id: int
 
