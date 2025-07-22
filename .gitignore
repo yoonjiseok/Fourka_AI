@@ -69,5 +69,6 @@ dmypy.json
 # pytest
 .pytest_cache/
 
-#venv
+# file_storage
+*/temp_file_storage/
 
