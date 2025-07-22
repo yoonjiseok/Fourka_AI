@@ -1,7 +1,9 @@
 import os
-from database.repository.document_repository import DocumentRepository
 from fastapi import UploadFile
+
+from database.repository.document_repository import DocumentRepository
 from service.chunk.chunk_service import ChunkService
+
 
 class DocumentService:
     def __init__(self, document_repository: DocumentRepository):

@@ -2,11 +2,11 @@ import asyncio
 import google.genai as genai
 from typing import List, Optional
 
-from database.models import FAQ, Tag
-from database.repository.faq_repository import FAQRepository
-from database.repository.tag_repository import TagRepository
 from api.routes.faq.faqDTO import FAQResponseDTO
 from config import settings
+from database.models import FAQ
+from database.repository.faq_repository import FAQRepository
+from database.repository.tag_repository import TagRepository
 
 
 class FAQService:

@@ -1,6 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+from pydantic import BaseModel
 
 
 # FAQ 관련 DTO

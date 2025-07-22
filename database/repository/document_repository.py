@@ -1,8 +1,9 @@
+from sqlalchemy import select, func, delete
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Sequence
 
-from sqlalchemy import update, insert, select, func, delete
-from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Document, Chunk
+
 
 class DocumentRepository:
     def __init__(self, db: AsyncSession):

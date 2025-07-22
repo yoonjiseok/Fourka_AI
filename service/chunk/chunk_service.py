@@ -1,10 +1,11 @@
 import asyncio
-from unstructured.partition.auto import partition
-from unstructured.chunking.title import chunk_by_title
-from utils.chunk_postprocess import merge_incomplete_chunks, validate_chunk_quality, add_overlap_to_chunks, clean_text
 import google.generativeai as genai
+from unstructured.chunking.title import chunk_by_title
+from unstructured.partition.auto import partition
+
 from config import settings
 from database.repository.document_repository import DocumentRepository
+from utils.chunk_postprocess import merge_incomplete_chunks, validate_chunk_quality, add_overlap_to_chunks, clean_text
 
 
 class ChunkService:

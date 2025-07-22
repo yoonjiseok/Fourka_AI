@@ -1,8 +1,8 @@
-from typing import List, Optional
+from typing import List
 
+from api.routes.faq.faqDTO import TagResponseDTO
 from database.models import Tag
 from database.repository.tag_repository import TagRepository
-from api.routes.faq.faqDTO import TagResponseDTO
 
 
 class TagService:

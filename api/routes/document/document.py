@@ -4,7 +4,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
 
 from api.routes.document import documentDTO
-from dependencies.dependency import get_document_service
+from dependencies.service_dependency import get_document_service
 from model import response_models
 from model.response_models import SuccessResponse
 from service.document.document_service import DocumentService

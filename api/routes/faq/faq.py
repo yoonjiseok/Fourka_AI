@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, Security, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPBearer
 
-from api.routes.faq.faqDTO import FAQCreateDTO, FAQUpdateDTO, FAQDeleteDTO, FAQResponseDTO
-from dependencies.dependency import get_faq_service
+from api.routes.faq.faqDTO import FAQCreateDTO, FAQUpdateDTO, FAQDeleteDTO
+from dependencies.service_dependency import get_faq_service
 from model.response_models import SuccessResponse
 from service.faq.faq_service import FAQService
 

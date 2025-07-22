@@ -1,11 +1,10 @@
-from typing import Annotated
-from fastapi import APIRouter, Security, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter, Depends
+from fastapi.security import HTTPBearer
 
-from dependencies.dependency import get_chat_service
-from service.chat.chat_service import ChatService
-from model.response_models import SuccessResponse
 from api.routes.chat import chatDTO
+from dependencies.service_dependency import get_chat_service
+from model.response_models import SuccessResponse
+from service.chat.chat_service import ChatService
 
 chat_router = APIRouter(prefix="/api/chats", tags=["chat"])
 

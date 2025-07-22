@@ -3,7 +3,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 
-from database.models import FAQ, Tag
+from database.models import FAQ
 
 
 class FAQRepository:

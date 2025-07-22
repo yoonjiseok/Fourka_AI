@@ -1,7 +1,9 @@
-from database.repository.chat_repository import ChatRepository
-from config import settings
-from api.routes.chat import chatDTO
 import google.generativeai as genai
+
+from api.routes.chat import chatDTO
+from config import settings
+from database.repository.chat_repository import ChatRepository
+
 
 class ChatService:
     def __init__(self, chat_repository: ChatRepository):

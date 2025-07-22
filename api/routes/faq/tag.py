@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, Security, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPBearer
 
-from api.routes.faq.faqDTO import TagCreateDTO, TagResponseDTO
-from dependencies.dependency import get_tag_service
+from api.routes.faq.faqDTO import TagCreateDTO
+from dependencies.service_dependency import get_tag_service
 from model.response_models import SuccessResponse
 from service.faq.tag_service import TagService
 

@@ -1,6 +1,5 @@
-from urllib.request import Request
-
 from starlette.responses import JSONResponse
+from urllib.request import Request
 
 from exception.models.base_exception_model import ErrorResponse, ErrorDetail
 from exception.models.exceptions import CustomException

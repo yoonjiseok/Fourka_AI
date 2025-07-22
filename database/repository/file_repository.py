@@ -1,8 +1,9 @@
-from typing import Sequence
-
 from sqlalchemy import update, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Sequence
+
 from database.models import Document
+
 
 class FileRepository:
     def __init__(self, db: AsyncSession):
