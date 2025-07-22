@@ -5,6 +5,7 @@ from database.repository.document_repository import DocumentRepository
 from database.repository.faq_repository import FAQRepository
 from database.repository.tag_repository import TagRepository
 from service.document.document_service import DocumentService
+from service.chunk.chunk_service import ChunkService
 from service.faq.faq_service import FAQService
 from service.faq.tag_service import TagService
 from database.repository.chat_repository import ChatRepository
@@ -16,6 +17,9 @@ def get_document_repository(db: AsyncSession = Depends(get_db)) -> DocumentRepos
 
 def get_document_service(repo: DocumentRepository = Depends(get_document_repository)) -> DocumentService:
     return DocumentService(repo)
+
+def get_chunk_service(repo: DocumentRepository = Depends(get_document_repository)) -> ChunkService:
+    return ChunkService(repo)
 
 
 # FAQ 관련 의존성
