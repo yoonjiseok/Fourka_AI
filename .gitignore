@@ -70,5 +70,6 @@ dmypy.json
 .pytest_cache/
 config.py
 
-#venv
+# file_storage
+*/temp_file_storage/
 
