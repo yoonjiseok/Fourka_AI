@@ -7,3 +7,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     metadata: Optional[List[dict]] = None
+
+class HILResponse(BaseModel):
+    answer: str
+    metadata: Optional[List[dict]]
