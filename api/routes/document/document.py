@@ -16,7 +16,7 @@ security_scheme = HTTPBearer()
 
 @document_router.patch("/pdf/update")
 async def update_pdf(
-        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
+        # token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
         documentDTO: documentDTO.UpdateDTO,
         document_service: DocumentService = Depends(get_document_service)
 ):
@@ -34,7 +34,7 @@ async def update_pdf(
 
 @document_router.post("/pdf/upload", response_model=SuccessResponse)
 async def upload_pdf(
-    token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
+    # token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
     background_tasks: BackgroundTasks,
     title: str = Form(...),
     version: str = Form(...),
