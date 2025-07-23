@@ -17,7 +17,7 @@ class ChatRepository:
                 c.metadata ->> 'content' as content,
                 c.metadata ->> 'page_number' as page_number,
                 d.title,
-                c.embedding <-> CAST(:embedding AS vector) AS distance
+                c.embedding <=> CAST(:embedding AS vector) AS distance
             FROM chunk c
             JOIN documents d ON c.doc_id = d.doc_id
             ORDER BY distance

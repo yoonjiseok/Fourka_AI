@@ -1,8 +1,10 @@
 import google.generativeai as genai
+from typing import List
 
 from api.routes.chat import chatDTO
 from config import settings
 from database.repository.chat_repository import ChatRepository
+from service.chat import HIL_service
 
 
 class ChatService:
@@ -14,27 +16,46 @@ class ChatService:
 
         self.embedding_model_name = "models/embedding-001"
 
-    async def send_chat(self, message: str) -> chatDTO.ChatResponse:
+    async def send_chat(self, message: str) -> chatDTO:
 
         embedding = self._text_to_embedding(message)
 
         print(f"DEBUG: Generated embedding dimension: {len(embedding)}")
 
-
         similar_chunks = await self.chat_repository.find_similar_chunks(embedding)
 
-        context_parts = []
+        context_list = []
         for chunk in similar_chunks:
             try:
-                content = chunk.content
-                title = chunk.title
-                page_number = chunk.page_number
-                context_parts.append(f"문서명: {title}, 페이지: {page_number}\n내용: {content}")
+                chunk_dict = {
+                    "title": chunk.title,
+                    "page_number": chunk.page_number,
+                    "content": chunk.content,
+                }
+                context_list.append(chunk_dict)
             except AttributeError:
                 print(f"Warning: Chunk object is missing 'content' attribute. Chunk: {chunk}")
                 continue
-        
-        context = "\n".join(context_parts)
+        print(f"DEBUG: created context list: {context_list}")
+
+
+
+
+        ###################################################
+        # TODO (하림)
+        """
+        만약 검색된 모든 청크의 유사도가 임계값 이하라면, HIL 서비스를 실행합니다.
+        """
+        # 추후 MSA로 구성된 백엔드의 Company 데이터베이스에서 think_level값을 받아와서 threshold 값으로 설정합니다.
+        HIL_flag = HIL_service.similar_chunks(similar_chunks, threshold=0.7)
+        if HIL_flag:
+            # 모든 청크의 유사도가 0.7 미만일때 HIL 서비스를 실행합니다.
+            print("DEBUG: HIL 서비스 실행")
+            return HIL_service.HIL(context_list)
+
+        ####################################################
+
+
 
         # 4. 프롬프트 생성
         prompt = f"""
@@ -42,7 +63,7 @@ class ChatService:
         만약 컨텍스트에 답변이 없다면, "죄송합니다, 관련 정보를 찾을 수 없습니다."라고 답변해주세요.
 
         컨텍스트:
-        {context}
+        {context_list}
 
         사용자 질문: {message}
 
