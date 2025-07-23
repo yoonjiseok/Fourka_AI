@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from api.routes.chat import chatDTO
 from dependencies.service_dependency import get_chat_service
+from dependencies.auth_dependency import get_current_user
 from model.response_models import SuccessResponse
 from service.chat.chat_service import ChatService
 
@@ -13,6 +14,7 @@ security_scheme = HTTPBearer()
 @chat_router.post("", response_model=SuccessResponse)
 async def chatting(
         request: chatDTO.ChatRequest,
+        current_user: dict = Depends(get_current_user),
         chat_service: ChatService = Depends(get_chat_service)
 ):
     response = await chat_service.send_chat(request.message)
