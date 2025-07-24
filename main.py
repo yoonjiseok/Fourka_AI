@@ -13,10 +13,8 @@ app = FastAPI(
     description="Rag AI Chatbot ",
 )
 
-@app.on_event("startup")
-async def startup_event():
-    async with async_engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.create_all)
+# 테이블 생성은 이제 Alembic으로 관리됩니다
+# 마이그레이션 적용: alembic upgrade head
 
 app.include_router(chat_router)
 app.include_router(document_router)
