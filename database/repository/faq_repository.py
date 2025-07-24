@@ -13,7 +13,7 @@ class FAQRepository:
     async def create_faq(self, faq: FAQ) -> FAQ:
         """FAQ 생성"""
         self.db.add(faq)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(faq)
         return faq
 
@@ -38,9 +38,8 @@ class FAQRepository:
         if faq:
             faq.question = question
             faq.answer = answer
-            faq.embedding = embedding
             faq.tag_id = tag_id
-            await self.db.commit()
+            await self.db.flush()
             await self.db.refresh(faq)
         
         return faq
@@ -53,7 +52,7 @@ class FAQRepository:
         
         if faq:
             await self.db.delete(faq)
-            await self.db.commit()
+            await self.db.flush()
             return True
         
         return False 

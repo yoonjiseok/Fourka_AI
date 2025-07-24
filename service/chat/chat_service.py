@@ -14,7 +14,7 @@ class ChatService:
         genai.configure(api_key=settings.GEMINI_API_KEY)
         self.llm_model = genai.GenerativeModel('gemini-2.5-flash')
 
-        self.embedding_model_name = "models/embedding-001"
+        self.embedding_model_name = "gemini-embedding-001"
 
     async def send_chat(self, message: str) -> chatDTO:
 
