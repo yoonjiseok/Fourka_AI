@@ -1,9 +1,7 @@
 import os
-from fastapi import UploadFile
-
 from database.repository.document_repository import DocumentRepository
+from fastapi import UploadFile
 from service.chunk.chunk_service import ChunkService
-
 
 class DocumentService:
     def __init__(self, document_repository: DocumentRepository):
@@ -44,7 +42,6 @@ class DocumentService:
         return doc_id, doc_title, doc_version, doc_created_at, save_path
 
     async def process_pdf_chunks(self, save_path, doc_id):
-        
         await self.chunk_service.process_pdf_chunks(save_path, doc_id)
 
     async def get_all_versions(self, folder_id: int):
