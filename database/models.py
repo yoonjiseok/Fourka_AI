@@ -27,6 +27,12 @@ class UserRole(enum.Enum):
     Master = "master"
 
 
+# 3. 피드백 타입을 위한 Enum 클래스 정의
+class FeedbackType(enum.Enum):
+    LIKE = "LIKE"
+    UNLIKE = "UNLIKE"
+
+
 # 3. 참조되는 모델들을 먼저 정의
 class Company(Base):
     __tablename__ = "company"
@@ -141,6 +147,7 @@ class Chat(Base):
     
     chat_room: Mapped["ChatRoom"] = relationship(back_populates="messages")
     author: Mapped["User"] = relationship(back_populates="messages")
+    feedback: Mapped[List["Feedback"]] = relationship(back_populates="chat")
 
 
 # 6. Tag 모델 추가
@@ -166,9 +173,24 @@ class FAQ(Base):
     answer: Mapped[str] = mapped_column(nullable=False)
     embedding: Mapped[list | None] = mapped_column(Vector(768))  # 질문 임베딩
     company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"), nullable=False)
-    tag_id: Mapped[int] = mapped_column(ForeignKey(Tag.tag_id), nullable=False)
+     # Tag.tag_id 대신 "tag.tag_id" 사용
+    tag_id: Mapped[int] = mapped_column(ForeignKey("tag.tag_id"), nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())
 
     # 관계(relationship)
     company: Mapped["Company"] = relationship(back_populates="faqs")
     tag: Mapped["Tag"] = relationship(back_populates="faqs")
+
+# 8. Feedback 모델 추가
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    feedback_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    chat_id: Mapped[int] = mapped_column(ForeignKey("chat.chat_id"), nullable=False)
+    feedback_type: Mapped[FeedbackType] = mapped_column(Enum(FeedbackType), nullable=False)
+    content: Mapped[str] = mapped_column(nullable=False)
+    answer: Mapped[str] = mapped_column(nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())
+    
+    # 관계(relationship)
+    chat: Mapped["Chat"] = relationship(back_populates="feedback")
