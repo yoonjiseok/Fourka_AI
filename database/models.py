@@ -40,7 +40,6 @@ class Company(Base):
     company_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(nullable=False, unique=True)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
-    
     departments: Mapped[List["Department"]] = relationship(back_populates="company")
     users: Mapped[List["User"]] = relationship(back_populates="company")
     folders: Mapped[List["Folder"]] = relationship(back_populates="company")
@@ -173,13 +172,13 @@ class FAQ(Base):
     answer: Mapped[str] = mapped_column(nullable=False)
     embedding: Mapped[list | None] = mapped_column(Vector(768))  # 질문 임베딩
     company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"), nullable=False)
-     # Tag.tag_id 대신 "tag.tag_id" 사용
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tag.tag_id"), nullable=False)
+    tag_id: Mapped[int] = mapped_column(ForeignKey(Tag.tag_id), nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())
 
     # 관계(relationship)
     company: Mapped["Company"] = relationship(back_populates="faqs")
     tag: Mapped["Tag"] = relationship(back_populates="faqs")
+
 
 # 8. Feedback 모델 추가
 class Feedback(Base):
@@ -190,7 +189,7 @@ class Feedback(Base):
     feedback_type: Mapped[FeedbackType] = mapped_column(Enum(FeedbackType), nullable=False)
     content: Mapped[str] = mapped_column(nullable=False)
     answer: Mapped[str] = mapped_column(nullable=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())
-    
+    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+
     # 관계(relationship)
     chat: Mapped["Chat"] = relationship(back_populates="feedback")
