@@ -68,3 +68,5 @@ google-generativeai>=0.8.0
 scikit-learn>=1.0.0
 # JWT 및 인증 관련
 PyJWT>=2.8.0
+# 데이터베이스 마이그레이션 관련
+alembic>=1.14.0
