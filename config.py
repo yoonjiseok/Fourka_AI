@@ -10,5 +10,4 @@ class Settings(BaseSettings):
     GEMINI_API_KEY : str | None = None
     JWT_SECRET: str  # JWT 검증용 시크릿키
 
-
 settings = Settings()

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.security import HTTPBearer
 
 from api.routes.faq.faqDTO import TagCreateDTO
 from dependencies.service_dependency import get_tag_service
+from dependencies.auth_dependency import get_current_user
 from model.response_models import SuccessResponse
 from service.faq.tag_service import TagService
 
@@ -12,10 +13,9 @@ security_scheme = HTTPBearer()
 
 @tag_router.post("/upload", response_model=SuccessResponse)
 async def upload_tag(
-    # 토큰 인증 주석 처리
-    #token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-    tag_dto: TagCreateDTO,
-    tag_service: TagService = Depends(get_tag_service)
+    current_user: dict = Depends(get_current_user),
+    tag_service: TagService = Depends(get_tag_service),
+    tag_dto: TagCreateDTO = Depends()
 ):
     """태그 등록"""
     try:
@@ -43,10 +43,9 @@ async def upload_tag(
 
 @tag_router.get("/{company_id}", response_model=SuccessResponse)
 async def get_tags_by_company(
-    # 토큰 인증 주석 처리
-    #token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-    company_id: int,
-    tag_service: TagService = Depends(get_tag_service)
+    current_user: dict = Depends(get_current_user),
+    tag_service: TagService = Depends(get_tag_service),
+    company_id: int = Path(...)
 ):
     """회사별 태그 전체 조회"""
     try:
