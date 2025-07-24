@@ -1,13 +1,25 @@
 from logging.config import fileConfig
+import os
+from dotenv import load_dotenv
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 
+# .env 파일 로드
+load_dotenv()
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# .env 파일에서 DB_URL 가져와서 설정
+db_url = os.getenv('DB_URL')
+if db_url:
+    # asyncpg를 psycopg로 변경 (Alembic은 동기 드라이버만 지원)
+    db_url = db_url.replace('postgresql+asyncpg://', 'postgresql+psycopg://')
+    config.set_main_option('sqlalchemy.url', db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
