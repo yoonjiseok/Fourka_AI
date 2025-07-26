@@ -12,10 +12,14 @@ security_scheme = HTTPBearer()
 
 @chat_router.post("", response_model=SuccessResponse)
 async def chatting(
-        request: chatDTO.ChatRequest,
+        request: chatDTO.ChatRequest, 
         chat_service: ChatService = Depends(get_chat_service)
 ):
-    response = await chat_service.send_chat(request.message)
+
+    response = await chat_service.send_chat(
+        message=request.message,
+        company_id=request.company_id
+    )
 
     return SuccessResponse(
         result={

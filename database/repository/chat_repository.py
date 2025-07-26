@@ -9,7 +9,7 @@ class ChatRepository:
         """
         주어진 임베딩과 가장 유사한 청크를 데이터베이스에서 검색합니다.
         """
-        # 임베딩 리스트를 pgvector가 인식할 수 있는 문자열 형태로 변환합니다.
+
         embedding_str = str(embedding)
 
         query = text("""

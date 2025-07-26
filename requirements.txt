@@ -66,3 +66,4 @@ pathlib>=1.0.0
 #gemini
 google-genai>=1.0.0
 scikit-learn>=1.0.0
+chromadb>=0.5.0
