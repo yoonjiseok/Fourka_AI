@@ -20,11 +20,7 @@ class ChatService:
 
     async def send_chat(self, message: str, company_id: int) -> chatDTO.ChatResponse:
         
-        # =================================================================
-        #  1. FAQ 우선 검색 (ChromaDB)
-        # =================================================================
-        # 유사도 임계값. 이 값은 실험을 통해 조정해야 합니다.
-        # ChromaDB의 기본 거리 측정 방식(L2-norm)은 값이 작을수록 유사도가 높습니다.
+        #FAQ 로직
         FAQ_SIMILARITY_THRESHOLD = 0.5
         
         faq_results = self.chroma_service.search(
@@ -49,9 +45,7 @@ class ChatService:
                 metadata=faq_metadata
             )
             
-        # =================================================================
-        #  2. RAG 폴백 (Fallback) - 기존 로직
-        # =================================================================
+        # RAG 로직
         print("DEBUG: FAQ에서 적절한 답변을 찾지 못해 RAG를 실행합니다.")
         
         embedding = self._text_to_embedding(message)
