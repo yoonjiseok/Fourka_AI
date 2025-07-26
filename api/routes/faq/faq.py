@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer
 
 from api.routes.faq.faqDTO import FAQCreateDTO, FAQUpdateDTO, FAQDeleteDTO
 from dependencies.service_dependency import get_faq_service
+from dependencies.auth_dependency import get_current_user
 from model.response_models import SuccessResponse
 from service.faq.faq_service import FAQService
 
@@ -12,10 +13,9 @@ security_scheme = HTTPBearer()
 
 @faq_router.post("/upload", response_model=SuccessResponse)
 async def upload_faq(
-    # 토큰 인증 주석 처리
-    #token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-    faq_dto: FAQCreateDTO,
-    faq_service: FAQService = Depends(get_faq_service)
+    current_user: dict = Depends(get_current_user),
+    faq_service: FAQService = Depends(get_faq_service),
+    faq_dto: FAQCreateDTO = Depends()
 ):
     """FAQ 등록"""
     try:
@@ -46,10 +46,9 @@ async def upload_faq(
 
 @faq_router.put("/update", response_model=SuccessResponse)
 async def update_faq(
-    # 토큰 인증 주석 처리
-    #token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-    faq_dto: FAQUpdateDTO,
-    faq_service: FAQService = Depends(get_faq_service)
+    current_user: dict = Depends(get_current_user),
+    faq_service: FAQService = Depends(get_faq_service),
+    faq_dto: FAQUpdateDTO = Depends()
 ):
     """FAQ 수정"""
     try:
@@ -82,10 +81,9 @@ async def update_faq(
 
 @faq_router.delete("/delete", response_model=SuccessResponse)
 async def delete_faq(
-    # 토큰 인증 주석 처리
-    #token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-    faq_dto: FAQDeleteDTO,
-    faq_service: FAQService = Depends(get_faq_service)
+    current_user: dict = Depends(get_current_user),
+    faq_service: FAQService = Depends(get_faq_service),
+    faq_dto: FAQDeleteDTO = Depends()
 ):
     """FAQ 삭제"""
     try:

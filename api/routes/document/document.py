@@ -1,24 +1,20 @@
-from fastapi import APIRouter, Security, UploadFile, File, Depends, Form, BackgroundTasks, Path
+from fastapi import APIRouter, UploadFile, File, Depends, Form, BackgroundTasks, Path
 from fastapi.encoders import jsonable_encoder
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Annotated
 
 from api.routes.document import documentDTO
 from dependencies.service_dependency import get_document_service
+from dependencies.auth_dependency import get_current_user
 from model import response_models
 from model.response_models import SuccessResponse
 from service.document.document_service import DocumentService
 
 document_router = APIRouter(prefix="/api/documents", tags=["files"])
 
-
-security_scheme = HTTPBearer()
-
 @document_router.patch("/pdf/update")
 async def update_pdf(
-        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-        documentDTO: documentDTO.UpdateDTO,
-        document_service: DocumentService = Depends(get_document_service)
+        current_user: dict = Depends(get_current_user),
+        document_service: DocumentService = Depends(get_document_service),
+        documentDTO: documentDTO.UpdateDTO = Depends()
 ):
     await document_service.update_file_name(
         file_id=documentDTO.doc_id,
@@ -34,14 +30,14 @@ async def update_pdf(
 
 @document_router.post("/pdf/upload", response_model=SuccessResponse)
 async def upload_pdf(
-    token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
     background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service),
     title: str = Form(...),
     version: str = Form(...),
     folder_id: int = Form(...),
     commit_message: str = Form(...),
-    file: UploadFile = File(...),
-    document_service: DocumentService = Depends(get_document_service)
+    file: UploadFile = File(...)
 ):
     print(f"[API_ROUTE] Starting PDF upload endpoint for file: {file.filename}")
     
@@ -77,10 +73,9 @@ async def upload_pdf(
 
 @document_router.get("/version-history/{folder_id}", response_model=response_models.SuccessResponse)
 async def get_version_history(
-        token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
+        current_user: dict = Depends(get_current_user),
         document_service: DocumentService = Depends(get_document_service),
-        folder_id: int = Path(..., title="Folder ID"),
-
+        folder_id: int = Path(..., title="Folder ID")
 ):
     documents= await document_service.get_all_versions(folder_id=folder_id)
     encoded_documents = jsonable_encoder(documents)
@@ -88,9 +83,9 @@ async def get_version_history(
 
 @document_router.delete("/pdf/delete", response_model=response_models.SuccessResponse)
 async def delete_pdf(
-    token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-    documentDTO: documentDTO.DeleteDTO,
-    document_service: DocumentService = Depends(get_document_service)
+    current_user: dict = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service),
+    documentDTO: documentDTO.DeleteDTO = Depends()
 ):
     delete_doc_id = await document_service.delete_pdf(doc_id=documentDTO.doc_id)
     return response_models.SuccessResponse(result= {"doc_id": delete_doc_id}, message="File deleted successfully", code=200)
