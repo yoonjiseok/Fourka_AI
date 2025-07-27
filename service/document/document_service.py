@@ -51,3 +51,6 @@ class DocumentService:
     async def delete_pdf(self, doc_id: int):
         deleted_doc_id = await self.document_repository.delete_pdf(doc_id)  
         return deleted_doc_id
+
+    async def change_main_document(self, doc_id: int, folder_id: int):
+        return await self.document_repository.change_main_document(doc_id, folder_id)

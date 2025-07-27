@@ -17,3 +17,6 @@ class DeleteDTO(BaseModel):
 class folderDTO(BaseModel):
     folder_id: int
 
+class ChangeMainDocumentDTO(BaseModel):
+    folder_id: int
+    doc_id: int

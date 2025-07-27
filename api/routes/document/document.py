@@ -89,3 +89,19 @@ async def delete_pdf(
 ):
     delete_doc_id = await document_service.delete_pdf(doc_id=documentDTO.doc_id)
     return response_models.SuccessResponse(result= {"doc_id": delete_doc_id}, message="File deleted successfully", code=200)
+
+@document_router.post("/change/main", response_model=response_models.SuccessResponse)
+async def change_main_document(
+    maindocumentDTO: documentDTO.ChangeMainDocumentDTO,
+    current_user: dict = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service)
+):
+    updated_doc_id = await document_service.change_main_document(
+        doc_id=maindocumentDTO.doc_id,
+        folder_id=maindocumentDTO.folder_id
+    )
+    return response_models.SuccessResponse(
+        result={"doc_id": updated_doc_id},
+        message="Main document changed successfully",
+        code=200
+)

@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Sequence
 
@@ -100,3 +100,22 @@ class DocumentRepository:
         await self.db.commit()
 
         return doc_id
+
+    async def change_main_document(self, doc_id: int, folder_id: int):
+        # 현재 폴더의 모든 문서에서 main_document의 사용 여부를 False로 설정
+        stmt = (
+            update(Document)
+            .where(Document.folder_id == folder_id)
+            .values(is_used=False)
+        )
+        await self.db.execute(stmt)
+
+        # 새로운 메인 문서 설정
+        stmt = (
+            update(Document)
+            .where(Document.doc_id == doc_id)
+            .values(is_used=True)
+        )
+        await self.db.execute(stmt)
+        await self.db.commit()
+
