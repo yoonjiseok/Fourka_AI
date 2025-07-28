@@ -66,8 +66,8 @@ pathlib>=1.0.0
 #gemini
 google-genai>=1.0.0
 scikit-learn>=1.0.0
+chromadb>=0.5.0
 # JWT 및 인증 관련
 PyJWT>=2.8.0
 # 데이터베이스 마이그레이션 관련
 alembic>=1.14.0
-chromadb>=0.5.0
