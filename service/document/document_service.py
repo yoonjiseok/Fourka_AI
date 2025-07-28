@@ -6,6 +6,9 @@ from service.chunk.chunk_service import ChunkService
 class DocumentService:
     def __init__(self, document_repository: DocumentRepository):
         self.document_repository = document_repository
+        # 서비스 초기화 시 genai를 설정합니다.
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        self.embedding_model_name = "gemini-embedding-001"
         self.chunk_service = ChunkService(document_repository)
 
     async def update_file_name(self, file_id: int, title: str):

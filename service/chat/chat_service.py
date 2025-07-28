@@ -5,6 +5,7 @@ from api.routes.chat import chatDTO
 from config import settings
 from database.repository.chat_repository import ChatRepository
 from service.chat import HIL_service
+from service.chroma_service import chroma_faq_service
 
 
 class ChatService:
@@ -14,15 +15,41 @@ class ChatService:
         genai.configure(api_key=settings.GEMINI_API_KEY)
         self.llm_model = genai.GenerativeModel('gemini-2.5-flash')
 
-        self.embedding_model_name = "models/embedding-001"
+        self.embedding_model_name = "gemini-embedding-001"
+        self.chroma_service = chroma_faq_service
 
-    async def send_chat(self, message: str) -> chatDTO:
-
+    async def send_chat(self, message: str, company_id: int) -> chatDTO.ChatResponse:
+        
+        #FAQ 로직
+        FAQ_SIMILARITY_THRESHOLD = 0.5
+        
+        faq_results = self.chroma_service.search(
+            user_question=message,
+            company_id=company_id,
+            n_results=1
+        )
+        
+        # 검색 결과가 있고, 가장 유사한 결과의 유사도(거리)가 임계값보다 낮은 경우
+        if faq_results['distances'] and faq_results['distances'][0][0] < FAQ_SIMILARITY_THRESHOLD:
+            print("DEBUG: FAQ에서 답변을 찾았습니다.")
+            faq_answer = faq_results['metadatas'][0][0]['answer']
+            faq_metadata = [{
+                "source": "FAQ",
+                "original_question": faq_results['documents'][0][0],
+                "faq_id": faq_results['metadatas'][0][0]['original_faq_id']
+            }]
+            
+            # FAQ 답변을 즉시 반환하고 함수 종료
+            return chatDTO.ChatResponse(
+                answer=faq_answer,
+                metadata=faq_metadata
+            )
+            
+        # RAG 로직
+        print("DEBUG: FAQ에서 적절한 답변을 찾지 못해 RAG를 실행합니다.")
+        
         embedding = self._text_to_embedding(message)
-
-        print(f"DEBUG: Generated embedding dimension: {len(embedding)}")
-
-        similar_chunks = await self.chat_repository.find_similar_chunks(embedding)
+        similar_chunks = await self.chat_repository.find_similar_chunks(embedding, company_id) # company_id 전달
 
         context_list = []
         for chunk in similar_chunks:
@@ -72,9 +99,7 @@ class ChatService:
 
 
         response = self.llm_model.generate_content(prompt)
-
-        # 메타데이터
-        metadata = [{"title": chunk.title, "page_number": str(chunk.page_number)} for chunk in similar_chunks]
+        metadata = [{"source": "Document", "title": chunk.document.title, "chunk_id": chunk.chunk_id} for chunk in similar_chunks]
 
         return chatDTO.ChatResponse(
             answer=response.text,

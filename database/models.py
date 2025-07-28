@@ -170,7 +170,6 @@ class FAQ(Base):
     faq_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     question: Mapped[str] = mapped_column(nullable=False)
     answer: Mapped[str] = mapped_column(nullable=False)
-    embedding: Mapped[list | None] = mapped_column(Vector(768))  # 질문 임베딩
     company_id: Mapped[int] = mapped_column(ForeignKey("company.company_id"), nullable=False)
     tag_id: Mapped[int] = mapped_column(ForeignKey(Tag.tag_id), nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())

@@ -72,3 +72,5 @@ dmypy.json
 # file_storage
 */temp_file_storage/
 
+#chroma_db
+*/chroma_db/
