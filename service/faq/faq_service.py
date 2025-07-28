@@ -17,31 +17,8 @@ class FAQService:
             company_id=company_id,
             tag_id=tag_id
         )
-        self.db_session.add(db_faq)
-        await self.db_session.commit()
-        await self.db_session.refresh(db_faq)
-
-        chroma_faq_service.upsert_faq(
-            faq_id=db_faq.faq_id,
-            question=db_faq.question,
-            answer=db_faq.answer,
-            company_id=db_faq.company_id,
-            tag_id=db_faq.tag_id
-        )
-        
-        return db_faq
-
-    async def update_faq(self, faq_id: int, question: str, answer: str, tag_id: int) -> FAQ | None:
-
-        result = await self.db_session.execute(select(FAQ).where(FAQ.faq_id == faq_id))
-        db_faq = result.scalars().first()
-        
-        if db_faq:
-            db_faq.question = question
-            db_faq.answer = answer
-            db_faq.tag_id = tag_id
-            await self.db_session.commit()
-            await self.db_session.refresh(db_faq)
+        try:
+            await self.db_session.flush()
 
             chroma_faq_service.upsert_faq(
                 faq_id=db_faq.faq_id,
@@ -50,22 +27,68 @@ class FAQService:
                 company_id=db_faq.company_id,
                 tag_id=db_faq.tag_id
             )
-            return db_faq
-        return None
+
+            await self.db_session.commit()
+
+        except Exception as e:
+            print(f"An error occurred. Rolling back DB transaction. Error: {e}")
+            await self.db_session.rollback()
+            raise
+
+        await self.db_session.refresh(db_faq)
+        return db_faq
+
+    async def update_faq(self, faq_id: int, question: str, answer: str, tag_id: int) -> FAQ | None:
+        result = await self.db_session.execute(select(FAQ).where(FAQ.faq_id == faq_id))
+        db_faq = result.scalars().first()
+        
+        if not db_faq:
+            return None
+
+        db_faq.question = question
+        db_faq.answer = answer
+        db_faq.tag_id = tag_id
+        
+        try:
+            
+            chroma_faq_service.upsert_faq(
+                faq_id=db_faq.faq_id,
+                question=db_faq.question,
+                answer=db_faq.answer,
+                company_id=db_faq.company_id,
+                tag_id=db_faq.tag_id
+            )
+
+            await self.db_session.commit()
+
+        except Exception as e:
+            print(f"FAQ update failed. Rolling back DB transaction. Error: {e}")
+   
+            await self.db_session.rollback()
+            raise
+
+        await self.db_session.refresh(db_faq)
+        return db_faq
 
     async def delete_faq(self, faq_id: int) -> bool:
-
         result = await self.db_session.execute(select(FAQ).where(FAQ.faq_id == faq_id))
         db_faq = result.scalars().first()
 
-        if db_faq:
+        if not db_faq:
+            return False
+            
+        try:
             await self.db_session.delete(db_faq)
-            await self.db_session.commit()
             
             chroma_faq_service.delete_faq(faq_id=faq_id)
             
-            return True
-        return False
+            await self.db_session.commit()
+            
+        except Exception as e:
+            await self.db_session.rollback()
+            raise
+            
+        return True
 
     async def get_faqs_by_company(self, company_id: int):
 
