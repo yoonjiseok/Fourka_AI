@@ -54,6 +54,8 @@ class ChromaFAQService:
             where={"company_id": company_id} 
         )
         return results
+    
+    
 
 # 서비스 인스턴스를 싱글톤처럼 생성하여 사용
 chroma_faq_service = ChromaFAQService()

@@ -11,6 +11,10 @@ from service.chroma_service import chroma_faq_service
 class ChatService:
     def __init__(self, chat_repository: ChatRepository):
         self.chat_repository = chat_repository
+
+        print("--- ChatService ---")
+        print(f"Attempting to configure with API Key: {settings.GEMINI_API_KEY}")
+        
         
         genai.configure(api_key=settings.GEMINI_API_KEY)
         self.llm_model = genai.GenerativeModel('gemini-2.5-flash')
@@ -21,14 +25,14 @@ class ChatService:
     async def send_chat(self, message: str, company_id: int) -> chatDTO.ChatResponse:
         
         #FAQ 로직
-        FAQ_SIMILARITY_THRESHOLD = 0.5
+        FAQ_SIMILARITY_THRESHOLD = 0.2
         
         faq_results = self.chroma_service.search(
             user_question=message,
             company_id=company_id,
             n_results=1
         )
-        
+        print(f"DEBUG: FAQ Distance: {faq_results['distances'][0][0]}")
         # 검색 결과가 있고, 가장 유사한 결과의 유사도(거리)가 임계값보다 낮은 경우
         if faq_results['distances'] and faq_results['distances'][0][0] < FAQ_SIMILARITY_THRESHOLD:
             print("DEBUG: FAQ에서 답변을 찾았습니다.")
