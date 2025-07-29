@@ -11,10 +11,7 @@ from service.chroma_service import chroma_faq_service
 class ChatService:
     def __init__(self, chat_repository: ChatRepository):
         self.chat_repository = chat_repository
-
-        print("--- ChatService ---")
-        print(f"Attempting to configure with API Key: {settings.GEMINI_API_KEY}")
-        
+    
         
         genai.configure(api_key=settings.GEMINI_API_KEY)
         self.llm_model = genai.GenerativeModel('gemini-2.5-flash')
