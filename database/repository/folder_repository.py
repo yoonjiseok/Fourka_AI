@@ -1,4 +1,3 @@
-# database/repository/folder_repository.py
 from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Sequence

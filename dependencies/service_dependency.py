@@ -5,13 +5,16 @@ from database.repository.chat_repository import ChatRepository
 from database.repository.document_repository import DocumentRepository
 from database.repository.tag_repository import TagRepository
 from database.repository.feedback_repository import FeedbackRepository
+from database.repository.folder_repository import FolderRepository
 from dependencies.repository_dependency import get_document_repository, get_faq_repository, get_tag_repository, \
     get_chat_repository, get_feedback_repository
+from dependencies.repository_dependency import get_folder_repository
 from service.chat.chat_service import ChatService
 from service.chunk.chunk_service import ChunkService
 from service.document.document_service import DocumentService
 from service.faq.faq_service import FAQService
 from service.faq.tag_service import TagService
+from service.folder.folder_service import FolderService
 from utils.db import get_db 
 
 from service.feedback.feedback_service import FeedbackService
@@ -37,3 +40,5 @@ def get_chat_service(repo: ChatRepository = Depends(get_chat_repository)) -> Cha
 def get_feedback_service(repo: FeedbackRepository = Depends(get_feedback_repository)) -> FeedbackService:
     return FeedbackService(repo)
 
+def get_folder_service(repo: FolderRepository = Depends(get_folder_repository)) -> FolderService:
+    return FolderService(repo)

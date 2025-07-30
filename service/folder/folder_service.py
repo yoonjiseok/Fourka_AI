@@ -1,4 +1,3 @@
-# service/folder/folder_service.py
 from typing import List, Optional
 
 from database.repository.folder_repository import FolderRepository
