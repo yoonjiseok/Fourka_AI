@@ -64,7 +64,7 @@ json5>=0.9.0
 # 파일 시스템 및 경로 처리
 pathlib>=1.0.0
 scikit-learn>=1.0.0
-chromadb>=0.5.0
+chromadb>=1.0.15
 # JWT 및 인증 관련
 PyJWT>=2.8.0
 # 데이터베이스 마이그레이션 관련
