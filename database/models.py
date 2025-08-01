@@ -110,7 +110,7 @@ class Chunk(Base):
     
     chunk_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     doc_id: Mapped[int] = mapped_column(ForeignKey("documents.doc_id"),primary_key=True, nullable=False)
-    embedding: Mapped[list | None] = mapped_column(Vector(768))
+    embedding: Mapped[list | None] = mapped_column(Vector(1024))
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
     #가중치 관련 column
