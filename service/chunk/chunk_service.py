@@ -1,5 +1,6 @@
 import asyncio
-import google.generativeai as genai
+import boto3 
+import json 
 from unstructured.chunking.title import chunk_by_title
 from unstructured.partition.auto import partition
 
@@ -9,11 +10,10 @@ from utils.chunk_postprocess import merge_incomplete_chunks, validate_chunk_qual
 
 
 class ChunkService:
-    def __init__(self, document_repository: DocumentRepository):
+    def __init__(self, document_repository: DocumentRepository, bedrock_runtime, embedding_model_id: str):
         self.document_repository = document_repository
-        # 서비스 초기화 시 genai를 설정합니다.
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.embedding_model_name = "models/embedding-001"
+        self.bedrock_runtime = bedrock_runtime
+        self.embedding_model_id = embedding_model_id
 
     async def process_pdf_chunks(self, save_path, doc_id):
         print(f"[BACKGROUND_TASK] Starting background chunk processing for doc_id: {doc_id}")
@@ -31,19 +31,17 @@ class ChunkService:
             elements
         )
         
-        # Step 3: 각 청크를 처리하고 바로 DB에 저장 (PCA 로직 제거)
         print(f"[BACKGROUND_TASK] Step 3: Processing and saving {len(chunks)} chunks...")
         for idx, chunk in enumerate(chunks):
             cleaned_content = clean_text(chunk.text)
             
-            # 텍스트를 768차원 임베딩으로 변환 (별도 스레드에서 실행)
+            # 텍스트를 임베딩으로 변환 (boto3는 동기 라이브러리이므로 기존처럼 별도 스레드에서 실행)
             embedding = await loop.run_in_executor(
                 None,
                 self._text_to_embedding,
                 cleaned_content
             )
             
-            # 메타데이터 준비 (검색 결과를 위해 content 추가)
             meta = chunk.metadata.to_dict()
             simplified_meta = {
                 'filename': meta.get('filename', ''),
@@ -51,7 +49,7 @@ class ChunkService:
                 'content': cleaned_content
             }
 
-            # DB에 768차원 청크 저장
+            # DB에 청크 저장
             await self.document_repository.create_chunk(
                 doc_id=doc_id,
                 embedding=embedding,
@@ -79,11 +77,19 @@ class ChunkService:
     
     def _text_to_embedding(self, text: str) -> list:
         """
-        텍스트를 Google의 'embedding-001' 모델을 사용하여 768차원 벡터로 변환합니다.
+        텍스트를 AWS Bedrock의 Titan 모델을 사용하여 벡터로 변환합니다.
         """
-        result = genai.embed_content(
-            model=self.embedding_model_name,
-            content=text,
-            task_type="retrieval_document"  # 문서를 저장할 때는 이 타입을 사용
-        )
-        return result['embedding'] 
+
+        try:
+            body = json.dumps({"inputText": text})
+            response = self.bedrock_runtime.invoke_model(
+                body=body,
+                modelId=self.embedding_model_id,
+                accept="application/json",
+                contentType="application/json"
+            )
+            response_body = json.loads(response.get("body").read())
+            return response_body.get("embedding")
+        except Exception as e:
+            print(f"Error creating embedding with Bedrock Titan: {e}")
+            raise

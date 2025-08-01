@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from database.models import FAQ # SQLAlchemy 모델
+from api.routes.faq.faqDTO import FAQResponseDTO
+from sqlalchemy.orm import selectinload
 # ChromaDB 서비스 임포트
 from service.chroma_service import chroma_faq_service
 
@@ -92,6 +94,20 @@ class FAQService:
 
     async def get_faqs_by_company(self, company_id: int):
 
-        result = await self.db_session.execute(select(FAQ).where(FAQ.company_id == company_id))
+        result = await self.db_session.execute(
+            select(FAQ).options(selectinload(FAQ.tag)).where(FAQ.company_id == company_id)
+        )
         faqs = result.scalars().all()
-        return faqs
+
+        faq_response = [FAQResponseDTO(
+            faq_id = faq.faq_id,
+            question = faq.question,
+            answer = faq.answer,
+            company_id = faq.company_id,
+            tag_id = faq.tag_id,
+            tag_name = faq.tag.name if faq.tag else None,
+            created_at = faq.created_at
+            )for faq in faqs
+        ]
+        
+        return faq_response

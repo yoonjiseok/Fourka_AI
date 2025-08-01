@@ -54,7 +54,8 @@ async def upload_pdf(
     # 백그라운드에서 청크 분석 및 저장
     background_tasks.add_task(
         document_service.process_pdf_chunks,
-        save_path, title, version, folder_id, commit_message, doc_id
+        save_path=save_path,
+        doc_id=doc_id
     )
     
     print(f"[API_ROUTE] Background task added. Sending response to client now!")

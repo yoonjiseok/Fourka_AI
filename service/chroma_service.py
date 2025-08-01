@@ -1,21 +1,74 @@
 import chromadb
+import boto3
+import json
 from config import settings
-from chromadb.utils import embedding_functions
+from chromadb import Documents, EmbeddingFunction, Embeddings
+
+class BedrockEmbeddingFunction(EmbeddingFunction):
+    def __init__(self, bedrock_runtime, model_id: str):
+        """
+        Bedrock 클라이언트와 모델 ID로 초기화합니다.
+        """
+        self.bedrock_runtime = bedrock_runtime
+        self.model_id = model_id
+
+    def __call__(self, input: Documents) -> Embeddings:
+        """
+        ChromaDB가 텍스트 목록(input)을 주면, Bedrock API를 호출하여
+        임베딩 목록을 반환합니다.
+        """
+        embeddings = []
+        for text in input:
+            try:
+                # Bedrock Titan V2 모델의 요청 본문 형식
+                body = json.dumps({"inputText": text})
+                response = self.bedrock_runtime.invoke_model(
+                    body=body,
+                    modelId=self.model_id,
+                    accept="application/json",
+                    contentType="application/json"
+                )
+                response_body = json.loads(response.get("body").read())
+                embedding = response_body.get("embedding")
+                if embedding:
+                    embeddings.append(embedding)
+                else:
+                    # 임베딩 생성 실패 시 오류 발생
+                    raise ValueError(f"Failed to get embedding for text: {text[:100]}")
+            except Exception as e:
+                print(f"Error creating embedding for text '{text[:100]}...': {e}")
+                raise e
+        return embeddings
+
 class ChromaFAQService:
     def __init__(self, path: str = "./chroma_db"):
         self.client = chromadb.PersistentClient(path=path)
         
-        gemini_ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
-            api_key=settings.GEMINI_API_KEY,
-            model_name="models/embedding-001"
+        try:
+            # Bedrock 클라이언트 초기화
+            bedrock_runtime = boto3.client(
+                service_name="bedrock-runtime",
+                region_name=settings.AWS_REGION_NAME,
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+            )
+        except Exception as e:
+            raise RuntimeError(f"AWS Bedrock 클라이언트 초기화 실패: {e}")
+
+        # 위에서 정의한 커스텀 클래스의 인스턴스 생성
+        bedrock_ef = BedrockEmbeddingFunction(
+            bedrock_runtime=bedrock_runtime,
+            model_id=settings.BEDROCK_EMBEDDING_MODEL_ID
         )
         
+        # 컬렉션을 가져올 때 커스텀 임베딩 함수를 지정
         self.collection = self.client.get_or_create_collection(
             name="faq",
-            embedding_function=gemini_ef 
+            embedding_function=bedrock_ef 
         )
         
-        print("ChromaDB FAQ Service Initialized with Gemini Embedding Model.")
+        print("ChromaDB FAQ Service Initialized with AWS Bedrock Titan Embedding Model.")
+
 
     def upsert_faq(self, faq_id: int, question: str, answer: str, company_id: int, tag_id: int):
         """FAQ를 ChromaDB에 추가하거나 업데이트합니다. (Upsert)"""
@@ -54,6 +107,8 @@ class ChromaFAQService:
             where={"company_id": company_id} 
         )
         return results
+    
+    
 
 # 서비스 인스턴스를 싱글톤처럼 생성하여 사용
 chroma_faq_service = ChromaFAQService()

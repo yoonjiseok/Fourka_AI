@@ -20,7 +20,9 @@ async def chatting(
 
     response = await chat_service.send_chat(
         message=request.message,
-        company_id=request.company_id
+        company_id=request.company_id,
+        chat_room_id=request.chat_room_id, 
+        user_id=current_user.get("user_id")  
     )
 
     return SuccessResponse(

@@ -1,15 +1,32 @@
 import os
+import boto3  # << 변경: boto3 import
 from database.repository.document_repository import DocumentRepository
 from fastapi import UploadFile
 from service.chunk.chunk_service import ChunkService
+from config import settings # << 변경: settings import 추가
 
 class DocumentService:
     def __init__(self, document_repository: DocumentRepository):
         self.document_repository = document_repository
-        # 서비스 초기화 시 genai를 설정합니다.
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.embedding_model_name = "gemini-embedding-001"
-        self.chunk_service = ChunkService(document_repository)
+
+        try:
+            self.bedrock_runtime = boto3.client(
+                service_name="bedrock-runtime",
+                region_name=settings.AWS_REGION_NAME,
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+            )
+            self.embedding_model_id = settings.BEDROCK_EMBEDDING_MODEL_ID
+        except Exception as e:
+            raise RuntimeError(f"AWS Bedrock 클라이언트 초기화 실패: {e}")
+
+        # ChunkService에 Bedrock 클라이언트와 모델 ID를 전달
+        self.chunk_service = ChunkService(
+            document_repository=document_repository,
+            bedrock_runtime=self.bedrock_runtime,
+            embedding_model_id=self.embedding_model_id
+        )
+
 
     async def update_file_name(self, file_id: int, title: str):
         # 파일 제목이라던가 그런거 검증로직 작성
