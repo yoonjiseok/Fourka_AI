@@ -3,6 +3,8 @@ from sqlalchemy.future import select
 from database.models import FAQ # SQLAlchemy 모델
 from api.routes.faq.faqDTO import FAQResponseDTO
 from sqlalchemy.orm import selectinload
+
+from exception.models.exception import FaqException
 # ChromaDB 서비스 임포트
 from service.chroma_service import chroma_faq_service
 
@@ -35,7 +37,7 @@ class FAQService:
         except Exception as e:
             print(f"An error occurred. Rolling back DB transaction. Error: {e}")
             await self.db_session.rollback()
-            raise
+            raise FaqException(message="FAQ creation failed. Please try again later.")
 
         await self.db_session.refresh(db_faq)
         return db_faq
@@ -67,7 +69,7 @@ class FAQService:
             print(f"FAQ update failed. Rolling back DB transaction. Error: {e}")
    
             await self.db_session.rollback()
-            raise
+            raise FaqException(message="FAQ update failed. Please try again later.")
 
         await self.db_session.refresh(db_faq)
         return db_faq
@@ -88,7 +90,7 @@ class FAQService:
             
         except Exception as e:
             await self.db_session.rollback()
-            raise
+            raise FaqException(message="FAQ deletion failed. Please try again later.")
             
         return True
 

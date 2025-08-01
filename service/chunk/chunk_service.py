@@ -1,11 +1,10 @@
 import asyncio
-import boto3 
-import json 
+import json
 from unstructured.chunking.title import chunk_by_title
 from unstructured.partition.auto import partition
 
-from config import settings
 from database.repository.document_repository import DocumentRepository
+from exception.models.exception import DocumentException
 from utils.chunk_postprocess import merge_incomplete_chunks, validate_chunk_quality, add_overlap_to_chunks, clean_text
 
 
@@ -91,5 +90,4 @@ class ChunkService:
             response_body = json.loads(response.get("body").read())
             return response_body.get("embedding")
         except Exception as e:
-            print(f"Error creating embedding with Bedrock Titan: {e}")
-            raise
+            raise DocumentException(message="임베딩 생성 실패: ", reason=str(e))

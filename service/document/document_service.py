@@ -2,6 +2,8 @@ import os
 import boto3  # << 변경: boto3 import
 from database.repository.document_repository import DocumentRepository
 from fastapi import UploadFile
+
+from exception.models.exception import DocumentException
 from service.chunk.chunk_service import ChunkService
 from config import settings # << 변경: settings import 추가
 
@@ -17,8 +19,9 @@ class DocumentService:
                 aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
             )
             self.embedding_model_id = settings.BEDROCK_EMBEDDING_MODEL_ID
+
         except Exception as e:
-            raise RuntimeError(f"AWS Bedrock 클라이언트 초기화 실패: {e}")
+            raise DocumentException(message=f"AWS Bedrock 클라이언트 초기화 실패: {e}")
 
         # ChunkService에 Bedrock 클라이언트와 모델 ID를 전달
         self.chunk_service = ChunkService(

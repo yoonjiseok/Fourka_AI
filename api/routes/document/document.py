@@ -2,8 +2,8 @@ from fastapi import APIRouter, UploadFile, File, Depends, Form, BackgroundTasks,
 from fastapi.encoders import jsonable_encoder
 
 from api.routes.document import documentDTO
-from dependencies.service_dependency import get_document_service
 from dependencies.auth_dependency import get_current_user
+from dependencies.service_dependency import get_document_service
 from model import response_models
 from model.response_models import SuccessResponse
 from service.document.document_service import DocumentService

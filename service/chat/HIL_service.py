@@ -14,7 +14,7 @@ def similar_chunks(chunks, threshold):
     return True
 
 
-def HIL(metadata: List[Dict[str, Any]]):  # 1. 파라미터 타입을 딕셔너리 리스트로 수정
+def HIL(metadata: List[Dict[str, Any]]):
     """
     HIL 서비스는 검색된 유사한 문서에 대해서 반환합니다.
     """
@@ -26,6 +26,7 @@ def HIL(metadata: List[Dict[str, Any]]):  # 1. 파라미터 타입을 딕셔너�
             "문서 페이지": data['page_number'],
             }
         ans_list.append(data_dict)
+
     return chatDTO.HILResponse(
         answer="검색결과가 없습니다. 유사한 문서는 아래의 부분입니다. 만약 해당 부분에서도 원하시는 정보가 없을 시 FAQ에 문의해주세요.",
         metadata=ans_list)

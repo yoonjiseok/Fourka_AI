@@ -17,7 +17,6 @@ async def chatting(
         current_user: dict = Depends(get_current_user),
         chat_service: ChatService = Depends(get_chat_service)
 ):
-
     response = await chat_service.send_chat(
         message=request.message,
         company_id=request.company_id,

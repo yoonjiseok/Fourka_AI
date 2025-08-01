@@ -1,8 +1,11 @@
-import chromadb
 import boto3
+import chromadb
 import json
-from config import settings
 from chromadb import Documents, EmbeddingFunction, Embeddings
+
+from config import settings
+from exception.models.exception import FaqException, AIException
+
 
 class BedrockEmbeddingFunction(EmbeddingFunction):
     def __init__(self, bedrock_runtime, model_id: str):
@@ -34,10 +37,10 @@ class BedrockEmbeddingFunction(EmbeddingFunction):
                     embeddings.append(embedding)
                 else:
                     # 임베딩 생성 실패 시 오류 발생
-                    raise ValueError(f"Failed to get embedding for text: {text[:100]}")
+                    raise AIException(message="Failed to get embedding for text(chroma)")
             except Exception as e:
                 print(f"Error creating embedding for text '{text[:100]}...': {e}")
-                raise e
+                raise AIException(message="Failed to get embedding for text(chroma)")
         return embeddings
 
 class ChromaFAQService:
@@ -53,7 +56,8 @@ class ChromaFAQService:
                 aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
             )
         except Exception as e:
-            raise RuntimeError(f"AWS Bedrock 클라이언트 초기화 실패: {e}")
+            print(f"Error initializing AWS Bedrock client: {e}")
+            raise AIException(message="Failed to initialize AWS Bedrock client.")
 
         # 위에서 정의한 커스텀 클래스의 인스턴스 생성
         bedrock_ef = BedrockEmbeddingFunction(
@@ -89,6 +93,7 @@ class ChromaFAQService:
         except Exception as e:
 
             print(f"Error upserting FAQ {faq_id} to ChromaDB: {e}")
+            raise FaqException(message="FAQ upsert failed. Please try again later.")
 
 
     def delete_faq(self, faq_id: int):
@@ -98,6 +103,7 @@ class ChromaFAQService:
             print(f"Deleted FAQ {faq_id} from ChromaDB.")
         except Exception as e:
             print(f"Error deleting FAQ {faq_id} from ChromaDB: {e}")
+            raise FaqException(message="FAQ deletion failed.")
 
     def search(self, user_question: str, company_id: int, n_results: int = 1):
         """사용자 질문으로 ChromaDB에서 가장 유사한 FAQ를 검색합니다."""
