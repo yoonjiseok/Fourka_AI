@@ -63,20 +63,24 @@ class ChatService:
         print("DEBUG: FAQ에서 적절한 답변을 찾지 못해 RAG를 실행합니다.")
         
         embedding = self._text_to_embedding(message)
-        similar_chunks = await self.chat_repository.find_similar_chunks(embedding, company_id) # company_id 전달
+        similar_chunks = await self.chat_repository.find_similar_chunks(
+        embedding=embedding, 
+        company_id=company_id
+    )
 
         context_list = []
         for chunk in similar_chunks:
             try:
                 chunk_dict = {
-                    "title": chunk.title,
-                    "page_number": chunk.page_number,
-                    "content": chunk.content,
+                    "title": chunk.title,  # Raw SQL에서 직접 선택한 컬럼
+                    "page_number": chunk.page_number,  # metadata에서 추출한 값
+                    "content": chunk.content,  # metadata에서 추출한 값
                 }
                 context_list.append(chunk_dict)
-            except AttributeError:
-                print(f"Warning: Chunk object is missing 'content' attribute. Chunk: {chunk}")
+            except AttributeError as e:
+                print(f"Warning: Chunk object error. Chunk ID: {getattr(chunk, 'chunk_id', 'Unknown')}, Error: {e}")
                 continue
+
         print(f"DEBUG: created context list: {context_list}")
 
 
@@ -117,7 +121,7 @@ class ChatService:
             
             body = json.dumps({
                 "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 2048,
+                "max_tokens": 1024,
                 "messages": messages
             })
 
@@ -135,7 +139,15 @@ class ChatService:
             print(f"Error calling Bedrock Claude Sonnet: {e}")
             raise
 
-        metadata = [{"source": "Document", "title": chunk.document.title, "chunk_id": chunk.chunk_id} for chunk in similar_chunks]
+        metadata = [
+        {
+            "source": "Document",
+            "title": chunk.title,  # Raw SQL에서 직접 선택한 컬럼
+            "chunk_id": chunk.chunk_id  # Raw SQL에서 직접 선택한 컬럼
+        }
+        for chunk in similar_chunks
+        ]
+
 
 
         return chatDTO.ChatResponse(
