@@ -7,7 +7,8 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     ForeignKey,
     func,
-    Enum
+    Enum,
+    text
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
