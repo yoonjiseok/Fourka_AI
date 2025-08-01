@@ -69,9 +69,9 @@ class ChatRepository:
         except Exception as e:
             print(f"Error in find_similar_chunks: {e}")
             raise
-            {"embedding": embedding_str, "company_id": company_id, "top_k": top_k}
-        )
-        return result.fetchall()
+
+        
+
 
     async def get_chunk_ids_by_chat_id(self, chat_id: int) -> list:
         """
