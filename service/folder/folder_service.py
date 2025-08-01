@@ -41,7 +41,7 @@ class FolderService:
         """
         회사 ID에 해당하는 모든 폴더를 조회합니다.
         """
-        # 실제로는 회사 ID 유효성 검사 등의 로직이 필요할 수 있습니다.
+        # 회사 ID 유효성 검사 등의 로직이 필요할 수 있습니다.
         # 여기서는 단순히 repository를 호출하여 폴더를 가져옵니다.
         return await self.folder_repository.get_folders_by_company_id(company_id)
 

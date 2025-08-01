@@ -8,7 +8,7 @@ from database.repository.tag_repository import TagRepository
 from database.repository.feedback_repository import FeedbackRepository
 from database.repository.folder_repository import FolderRepository
 from dependencies.repository_dependency import get_document_repository, get_faq_repository, get_tag_repository, \
-    get_chat_repository, get_chunk_repository, get_feedback_repository
+    get_chat_repository, get_chunk_repository, get_feedback_repository, get_folder_repository
 from service.chat.chat_service import ChatService
 from service.chunk.chunk_service import ChunkService
 from service.document.document_service import DocumentService
