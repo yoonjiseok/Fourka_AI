@@ -26,7 +26,8 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
     return {
         "sub": "dev@example.com",
         "user_id": 123,
-        "role": "admin"
+        "role": "admin",
+        "company_id" : 1
     }
     
     """

@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from database.repository.folder_repository import FolderRepository
 from database.models import Folder
-from exception.models.exceptions import CustomException # CustomException 임포트 [cite: 81]
+from exception.models.exceptions import CustomException # CustomException
 
 class FolderService:
     def __init__(self, folder_repository: FolderRepository):
@@ -81,11 +81,11 @@ class FolderService:
             )
         return updated_folder
 
-    async def delete_folder(self, folder_id: int) -> int:
+    async def delete_folder(self, folder_id: int, company_id: int) -> int:
         """
-        폴더를 삭제합니다. 폴더가 존재하지 않으면 예외를 발생시킵니다.
+        폴더를 삭제합니다. 폴더가 존재하지 않거나 소유권이 없으면 예외를 발생시킵니다.
         """
-        # 삭제 전에 폴더가 존재하는지 확인
+        # 삭제 전 폴더 존재 여부 확인
         existing_folder = await self.folder_repository.get_folder_by_id(folder_id)
         if not existing_folder:
             raise CustomException(
@@ -94,10 +94,20 @@ class FolderService:
                 reason=f"ID가 {folder_id}인 폴더를 찾을 수 없습니다.",
                 field="folder_id"
             )
-            
-        success = await self.folder_repository.delete_folder(folder_id)
+
+        # 소유권 확인 로직. DB에 저장된 폴더의 company_id와 JWT에서 온 company_id가 일치하는지 확인합니다.
+        if existing_folder.company_id != company_id:
+            raise CustomException(
+                status_code=403,
+                message="폴더 삭제 실패",
+                reason=f"해당 폴더에 대한 삭제 권한이 없습니다.",
+                field="folder_id"
+            )
+
+        # 소유권이 확인되었을 때만 Repository의 삭제 함수 호출
+        success = await self.folder_repository.delete_folder(folder_id, company_id)
+        
         if not success:
-            # 삭제는 됐으나 repository에서 false를 반환하는 경우 (거의 없음)
             raise CustomException(
                 status_code=500,
                 message="폴더 삭제 실패",

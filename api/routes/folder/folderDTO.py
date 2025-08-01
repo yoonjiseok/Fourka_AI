@@ -12,13 +12,9 @@ class FolderUpdateDTO(BaseModel):
     folder_id: int # 수정할 폴더의 ID
     name: str      # 새로운 폴더 이름
 
-# 폴더 삭제를 위한 DTO (POST 요청 바디 사용)
+# 폴더 삭제를 위한 DTO
 class FolderDeleteDTO(BaseModel):
     folder_id: int # 삭제할 폴더의 ID
-
-# 회사별 폴더 조회를 위한 DTO (POST 요청 바디 사용)
-class FolderGetByCompanyDTO(BaseModel):
-    company_id: int # 조회할 회사의 ID
 
 # 폴더 응답을 위한 DTO (데이터베이스 모델 기반)
 class FolderResponseDTO(BaseModel):

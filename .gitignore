@@ -69,8 +69,8 @@ dmypy.json
 # pytest
 .pytest_cache/
 
-# file_storage
-*/temp_file_storage/
+# 임시 파일 저장소
+/temp_file_storage/
 
-#chroma_db
-*/chroma_db/
+# 로컬 벡터 데이터베이스
+/chroma_db/
