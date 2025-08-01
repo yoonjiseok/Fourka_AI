@@ -1,7 +1,9 @@
 import os
+import google.generativeai as genai
 from database.repository.document_repository import DocumentRepository
 from fastapi import UploadFile
 from service.chunk.chunk_service import ChunkService
+from config import settings
 
 class DocumentService:
     def __init__(self, document_repository: DocumentRepository):

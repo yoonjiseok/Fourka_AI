@@ -18,7 +18,7 @@ class ChatService:
         self.embedding_model_name = "gemini-embedding-001"
         self.chroma_service = chroma_faq_service
 
-    async def send_chat(self, message: str, company_id: int) -> chatDTO.ChatResponse:
+    async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int) -> chatDTO.ChatResponse:
         
         #FAQ 로직
         FAQ_SIMILARITY_THRESHOLD = 0.5
@@ -55,13 +55,15 @@ class ChatService:
         for chunk in similar_chunks:
             try:
                 chunk_dict = {
-                    "title": chunk.title,
-                    "page_number": chunk.page_number,
-                    "content": chunk.content,
+                    "doc_id": chunk[0],      # doc_id
+                    "chunk_id": chunk[1],    # chunk_id
+                    "title": chunk[4],       # title
+                    "page_number": chunk[3], # page_number
+                    "content": chunk[2],     # content
                 }
                 context_list.append(chunk_dict)
-            except AttributeError:
-                print(f"Warning: Chunk object is missing 'content' attribute. Chunk: {chunk}")
+            except (AttributeError, IndexError):
+                print(f"Warning: Chunk object is missing required fields. Chunk: {chunk}")
                 continue
         print(f"DEBUG: created context list: {context_list}")
 
@@ -99,7 +101,12 @@ class ChatService:
 
 
         response = self.llm_model.generate_content(prompt)
-        metadata = [{"source": "Document", "title": chunk.document.title, "chunk_id": chunk.chunk_id} for chunk in similar_chunks]
+        metadata = [{"source": "Document", "title": chunk[4], "doc_id": chunk[0], "chunk_id": chunk[1]} for chunk in similar_chunks]
+        
+        # 답변을 만들 때 참고한 chunk_id들을 추출하여 리스트로 만들어 저장 (복합키: doc_id, chunk_id)
+        chunk_ids = [(chunk[0], chunk[1]) for chunk in similar_chunks]
+        
+        await self.chat_repository.save_chat(message, chunk_ids, chat_room_id, user_id)
 
         return chatDTO.ChatResponse(
             answer=response.text,
