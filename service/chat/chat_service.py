@@ -142,8 +142,8 @@ class ChatService:
         metadata = [
         {
             "source": "Document",
-            "title": chunk.title,  # Raw SQL에서 직접 선택한 컬럼
-            "chunk_id": chunk.chunk_id  # Raw SQL에서 직접 선택한 컬럼
+            "title": chunk.title,  
+            "chunk_id": chunk.chunk_id 
         }
         for chunk in similar_chunks
         ]

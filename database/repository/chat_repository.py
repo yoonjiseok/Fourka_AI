@@ -1,10 +1,5 @@
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
-from sqlalchemy.future import select    
-
-from database.models import Chunk, Document, Folder 
-
 
 class ChatRepository:
     def __init__(self, db: AsyncSession):
@@ -38,12 +33,12 @@ class ChatRepository:
             query,
             {
                 "embedding": embedding_str,
-                "company_id": company_id,    # 이 파라미터가 누락되었음
-                "top_k": top_k              # 이 파라미터도 누락되었음
+                "company_id": company_id,    
+                "top_k": top_k              
             }
             )
         
-            return result.fetchall()  # scalars().unique().all() 대신 fetchall() 사용
+            return result.fetchall() 
 
             
         except Exception as e:
