@@ -28,7 +28,7 @@ class ChatService:
         # ChromaDB 서비스는 그대로 사용
         self.chroma_service = chroma_faq_service
 
-    async def send_chat(self, message: str, company_id: int) -> chatDTO.ChatResponse:
+    async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int) -> chatDTO.ChatResponse:
         
         #FAQ 로직
         FAQ_SIMILARITY_THRESHOLD = 0.2
@@ -72,13 +72,17 @@ class ChatService:
         for chunk in similar_chunks:
             try:
                 chunk_dict = {
-                    "title": chunk.title,  # Raw SQL에서 직접 선택한 컬럼
-                    "page_number": chunk.page_number,  # metadata에서 추출한 값
-                    "content": chunk.content,  # metadata에서 추출한 값
+
+                    "doc_id": chunk[0],      # doc_id
+                    "chunk_id": chunk[1],    # chunk_id
+                    "title": chunk[4],       # title
+                    "page_number": chunk[3], # page_number
+                    "content": chunk[2],     # content
                 }
                 context_list.append(chunk_dict)
-            except AttributeError as e:
-                print(f"Warning: Chunk object error. Chunk ID: {getattr(chunk, 'chunk_id', 'Unknown')}, Error: {e}")
+            except (AttributeError, IndexError):
+                print(f"Warning: Chunk object is missing required fields. Chunk: {chunk}")
+
                 continue
 
         print(f"DEBUG: created context list: {context_list}")
@@ -115,7 +119,6 @@ class ChatService:
         답변:
         """
 
-
         try:
             messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
             
@@ -147,7 +150,6 @@ class ChatService:
         }
         for chunk in similar_chunks
         ]
-
 
 
         return chatDTO.ChatResponse(

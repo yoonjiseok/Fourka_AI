@@ -113,7 +113,11 @@ class Chunk(Base):
     embedding: Mapped[list | None] = mapped_column(Vector(1024))
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
-    
+    #가중치 관련 column
+    weight: Mapped[float] = mapped_column(nullable=False, server_default=text("1.0"))
+    updated_at: Mapped[datetime.datetime] = mapped_column(nullable=False, server_default=func.now())
+
+
     document: Mapped["Document"] = relationship(back_populates="chunks")
 
 
@@ -143,7 +147,9 @@ class Chat(Base):
     chat_room_id: Mapped[int] = mapped_column(ForeignKey("chat_room.chat_room_id"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"), nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+    chunk_ids: Mapped[List] = mapped_column(JSONB, nullable=False, server_default="'[]'::jsonb")
     
+    # 관계(relationship)
     chat_room: Mapped["ChatRoom"] = relationship(back_populates="messages")
     author: Mapped["User"] = relationship(back_populates="messages")
     feedback: Mapped[List["Feedback"]] = relationship(back_populates="chat")
