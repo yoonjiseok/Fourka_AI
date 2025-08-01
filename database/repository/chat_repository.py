@@ -6,6 +6,7 @@ class ChatRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+
     async def save_chat(self, message: str, chunk_ids: list, chat_room_id: int, user_id: int) -> int:
         """
         채팅 메시지와 관련 chunk_id들을 데이터베이스에 저장합니다.
@@ -27,10 +28,10 @@ class ChatRepository:
         """
         주어진 임베딩과 가장 유사한 청크를 데이터베이스에서 검색합니다.
         """
-
-        embedding_str = str(embedding)
-
-        query = text("""
+        try:
+            embedding_str = str(embedding)
+            
+            query = text("""
             SELECT
                 c.doc_id,
                 c.chunk_id,
@@ -51,10 +52,23 @@ class ChatRepository:
             WHERE f.company_id = :company_id
             ORDER BY similarity_score DESC
             LIMIT :top_k
-        """)
-
-        result = await self.db.execute(
+            """)
+            
+            result = await self.db.execute(
             query,
+            {
+                "embedding": embedding_str,
+                "company_id": company_id,    
+                "top_k": top_k              
+            }
+            )
+        
+            return result.fetchall() 
+
+            
+        except Exception as e:
+            print(f"Error in find_similar_chunks: {e}")
+            raise
             {"embedding": embedding_str, "company_id": company_id, "top_k": top_k}
         )
         return result.fetchall()
@@ -68,3 +82,4 @@ class ChatRepository:
         """)
         result = await self.db.execute(query, {"chat_id": chat_id})
         return result.fetchone()[0]
+

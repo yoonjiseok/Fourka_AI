@@ -63,12 +63,16 @@ class ChatService:
         print("DEBUG: FAQ에서 적절한 답변을 찾지 못해 RAG를 실행합니다.")
         
         embedding = self._text_to_embedding(message)
-        similar_chunks = await self.chat_repository.find_similar_chunks(embedding, company_id) # company_id 전달
+        similar_chunks = await self.chat_repository.find_similar_chunks(
+        embedding=embedding, 
+        company_id=company_id
+    )
 
         context_list = []
         for chunk in similar_chunks:
             try:
                 chunk_dict = {
+
                     "doc_id": chunk[0],      # doc_id
                     "chunk_id": chunk[1],    # chunk_id
                     "title": chunk[4],       # title
@@ -78,7 +82,9 @@ class ChatService:
                 context_list.append(chunk_dict)
             except (AttributeError, IndexError):
                 print(f"Warning: Chunk object is missing required fields. Chunk: {chunk}")
+
                 continue
+
         print(f"DEBUG: created context list: {context_list}")
 
 
@@ -118,7 +124,7 @@ class ChatService:
             
             body = json.dumps({
                 "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 2048,
+                "max_tokens": 1024,
                 "messages": messages
             })
 
@@ -136,7 +142,15 @@ class ChatService:
             print(f"Error calling Bedrock Claude Sonnet: {e}")
             raise
 
-        metadata = [{"source": "Document", "title": chunk.document.title, "chunk_id": chunk.chunk_id} for chunk in similar_chunks]
+        metadata = [
+        {
+            "source": "Document",
+            "title": chunk.title,  
+            "chunk_id": chunk.chunk_id 
+        }
+        for chunk in similar_chunks
+        ]
+
 
         return chatDTO.ChatResponse(
             answer=answer,
