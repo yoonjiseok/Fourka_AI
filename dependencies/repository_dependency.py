@@ -8,6 +8,7 @@ from database.repository.document_repository import DocumentRepository
 from database.repository.faq_repository import FAQRepository
 from database.repository.tag_repository import TagRepository
 from database.repository.feedback_repository import FeedbackRepository
+from database.repository.folder_repository import FolderRepository
 from utils.db import get_db
 
 
@@ -29,3 +30,6 @@ def get_chunk_repository(db: AsyncSession = Depends(get_db)) -> ChunkRepository:
 
 def get_feedback_repository(db: AsyncSession = Depends(get_db)) -> FeedbackRepository:
     return FeedbackRepository(db)
+
+def get_folder_repository(db: AsyncSession = Depends(get_db)) -> FolderRepository: # 추가
+    return FolderRepository(db)

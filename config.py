@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     BEDROCK_EMBEDDING_MODEL_ID: str
     BEDROCK_LLM_MODEL_ID: str
 
+    GEMINI_API_KEY: str  # Gemini API 키
+    API_PREFIX: str
+
+
     # --- 기존 변수들 ---
     DEBUG: bool = True
     TIMEZONE_LOCATION: str = "Asia/Seoul"

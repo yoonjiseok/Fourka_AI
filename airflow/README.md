@@ -29,20 +29,20 @@ docker-compose --version # docker-compose version 1.28+
 ## 🚀 빠른 시작
 
 ### 1. 환경설정
-```bash
-# FourKa DB 연결 정보 설정
-cp airflow/env.example .env
+
+**✅ 현재 환경변수 방식으로 DB 연동이 자동 설정됩니다!**
+
+기존 FastAPI 프로젝트의 `.env` 파일에 다음 환경변수가 있는지 확인:
+```env
+# 기존 FastAPI DB 연결 (이미 설정됨)
+DB_URL=postgresql+asyncpg://user:password@host:port/database
+
+# Airflow에서 자동으로 DB_URL을 파싱하여 연결 생성됩니다
+# 별도 설정 불필요! 🎉
 ```
 
-**`.env` 파일 수정** (실제 값으로 변경):
-```env
-# FourKa 운영 DB 정보
-FOURKA_DB_HOST=144.24.93.228  # 또는 실제 DB 호스트
-FOURKA_DB_PORT=5432
-FOURKA_DB_NAME=fourka
-FOURKA_DB_USER=admin
-FOURKA_DB_PASSWORD=1234
-```
+> **💡 참고**: `docker-compose.airflow.yml`에서 환경변수를 자동으로 파싱하여  
+> `fourka_db` Connection을 생성합니다. 별도 설정이 불필요합니다!
 
 ### 2. Airflow 시작
 ```bash
@@ -61,7 +61,7 @@ chmod +x airflow/start_airflow.sh
 - **로그인**: admin / admin
 
 ### 4. DAG 활성화
-1. DAG 목록에서 `ml_weight_decay` 찾기
+1. DAG 목록에서 `chunk_weight_decay` 찾기
 2. 왼쪽 토글 스위치 **ON**
 3. DAG 이름 클릭 → Graph 탭에서 구조 확인
 
@@ -72,7 +72,7 @@ chmod +x airflow/start_airflow.sh
 ### 수동 DAG 트리거
 ```bash
 # 즉시 실행
-docker exec airflow_webserver airflow dags trigger ml_weight_decay
+docker exec airflow_webserver airflow dags trigger chunk_weight_decay
 ```
 
 ### 실행 상태 확인
@@ -84,7 +84,7 @@ from airflow.utils.session import provide_session
 
 @provide_session
 def check_runs(session=None):
-    runs = session.query(DagRun).filter(DagRun.dag_id == 'ml_weight_decay').order_by(DagRun.execution_date.desc()).limit(3).all()
+    runs = session.query(DagRun).filter(DagRun.dag_id == 'chunk_weight_decay').order_by(DagRun.execution_date.desc()).limit(3).all()
     for run in runs:
         print(f'🔄 {run.run_id[-10:]}: {run.state}')
 
@@ -163,11 +163,11 @@ schedule_interval=None           # 수동 실행만
 
 ```sql
 -- 현재: 7일 이상
-AND updated_at < NOW() - '7 days'::INTERVAL
+AND updated_at < NOW() - INTERVAL '7 days'
 
 -- 변경 예시:
-AND updated_at < NOW() - '3 days'::INTERVAL   -- 3일로 단축
-AND updated_at < NOW() - '14 days'::INTERVAL  -- 2주로 연장
+AND updated_at < NOW() - INTERVAL '3 days'   -- 3일로 단축
+AND updated_at < NOW() - INTERVAL '14 days'  -- 2주로 연장
 ```
 
 ### Decay 비율 조정
@@ -201,7 +201,7 @@ ports:
 #### 2. FourKa DB 연결 실패
 ```bash
 # 환경변수 확인
-docker exec airflow_webserver env | grep FOURKA
+docker exec airflow_webserver env | grep -E "(DB_URL|FOURKA)"
 
 # 재시작
 docker-compose -f docker-compose.airflow.yml restart
@@ -244,7 +244,7 @@ docker-compose -f docker-compose.airflow.yml down -v
 ## 📚 DAG 구조 이해
 
 ```
-ml_weight_decay (매주 일요일 2AM)
+chunk_weight_decay (매주 일요일 2AM)
 ├── create_decay_logs_table    # 로그 테이블 생성
 ├── decay_chunk_weights        # 가중치 Decay 실행
 ├── generate_decay_summary     # 실행 요약 생성
@@ -267,7 +267,7 @@ decay_chunk_weights
 - [ ] Docker Compose 정상 실행
 - [ ] Airflow UI 접속 (http://localhost:8080)
 - [ ] FourKa DB 연결 테스트 통과
-- [ ] `ml_weight_decay` DAG 활성화
+- [ ] `chunk_weight_decay` DAG 활성화
 - [ ] 수동 트리거 테스트 성공
 - [ ] 로그에서 실행 결과 확인
 
@@ -277,6 +277,6 @@ decay_chunk_weights
 
 - **DAG 설정**: `airflow/dags/ml_weight_decay_dag.py` 파일 확인
 - **SQL 로직**: `airflow/dags/sql/decay_chunk_weights.sql` 파일 확인
-- **연결 문제**: `.env` 파일의 FourKa DB 정보 재확인
+- **연결 설정**: `docker-compose.airflow.yml`의 환경변수 자동 연결 방식
 
 **🎉 설치 완료! 이제 주간 가중치 Decay 시스템이 자동으로 작동합니다!** 
