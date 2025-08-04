@@ -8,7 +8,7 @@ from model.response_models import SuccessResponse
 from service.feedback.feedback_service import FeedbackService
 from database.models import Feedback
 
-feedback_router = APIRouter(prefix="/api/feedbacks", tags=["feedback"])
+feedback_router = APIRouter(prefix="/api/ai/feedbacks", tags=["feedback"])
 security_scheme = HTTPBearer()
 
 

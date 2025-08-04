@@ -13,7 +13,7 @@ from exception.models.exception import BaseApiException
 from model.response_models import SuccessResponse  # 공통 응답 모델
 from service.folder.folder_service import FolderService
 
-folder_router = APIRouter(prefix="/api/folders", tags=["Folder"]) # tags를 "Folder"로 변경하여 Swagger UI 그룹화
+folder_router = APIRouter(prefix="/api/ai/folders", tags=["Folder"]) # tags를 "Folder"로 변경하여 Swagger UI 그룹화
 
 security_scheme = HTTPBearer() # 인증 스키마 
 

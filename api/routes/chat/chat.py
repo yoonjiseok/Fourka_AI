@@ -7,7 +7,7 @@ from dependencies.service_dependency import get_chat_service
 from model.response_models import SuccessResponse
 from service.chat.chat_service import ChatService
 
-chat_router = APIRouter(prefix="/api/chats", tags=["chat"])
+chat_router = APIRouter(prefix="/api/ai/chats", tags=["chat"])
 
 security_scheme = HTTPBearer()
 
