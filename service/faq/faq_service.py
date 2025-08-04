@@ -29,9 +29,9 @@ class FAQService:
                 company_id=db_faq.company_id,
                 tag_id=db_faq.tag_id
             )
-
+            self.db_session.add(db_faq)
             await self.db_session.commit()
-
+            
         except Exception as e:
             print(f"An error occurred. Rolling back DB transaction. Error: {e}")
             await self.db_session.rollback()
