@@ -12,9 +12,9 @@ document_router = APIRouter(prefix="/api/ai/documents", tags=["files"])
 
 @document_router.patch("/pdf/update")
 async def update_pdf(
+        documentDTO: documentDTO.UpdateDTO,
         current_user: dict = Depends(get_current_user),
         document_service: DocumentService = Depends(get_document_service),
-        documentDTO: documentDTO.UpdateDTO = Depends()
 ):
     await document_service.update_file_name(
         file_id=documentDTO.doc_id,
@@ -84,9 +84,9 @@ async def get_version_history(
 
 @document_router.delete("/pdf/delete", response_model=response_models.SuccessResponse)
 async def delete_pdf(
+    documentDTO: documentDTO.DeleteDTO,
     current_user: dict = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
-    documentDTO: documentDTO.DeleteDTO = Depends()
 ):
     delete_doc_id = await document_service.delete_pdf(doc_id=documentDTO.doc_id)
     return response_models.SuccessResponse(result= {"doc_id": delete_doc_id}, message="File deleted successfully", code=200)
