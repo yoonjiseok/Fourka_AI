@@ -122,6 +122,6 @@ async def get_faqs_by_company(
         )
     except KeyError:
         # 토큰에 company_id가 없는 경우 예외 처리
-        raise BaseException(status_code=401, message="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
+        raise HTTPException(status_code=401, detail="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
     except Exception as e:
-        raise BaseException(status_code=500, message=f"FAQ 조회 중 오류가 발생했습니다: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"FAQ 조회 중 오류가 발생했습니다: {str(e)}")
