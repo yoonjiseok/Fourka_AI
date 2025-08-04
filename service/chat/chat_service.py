@@ -6,6 +6,7 @@ from config import settings
 from database.repository.chat_repository import ChatRepository
 from service.chat import HIL_service
 from service.chroma_service import chroma_faq_service
+from exception.models.exception import ChatException
 
 class ChatService:
     def __init__(self, chat_repository: ChatRepository):
@@ -81,9 +82,10 @@ class ChatService:
                 }
                 context_list.append(chunk_dict)
             except (AttributeError, IndexError):
-                print(f"Warning: Chunk object is missing required fields. Chunk: {chunk}")
+                raise ChatException(message="청크 데이터 형식이 올바르지 않습니다. 청크 데이터를 확인해주세요.")
+            except Exception as e:
+                raise ChatException(message=f"청크 처리 중 오류 발생: {e}")
 
-                continue
 
         print(f"DEBUG: created context list: {context_list}")
 
@@ -139,8 +141,7 @@ class ChatService:
             answer = response_body['content'][0]['text']
 
         except Exception as e:
-            print(f"Error calling Bedrock Claude Sonnet: {e}")
-            raise
+            raise ChatException(message=f"챗봇 응답 생성 중 오류 발생: {e}")
 
         metadata = [
         {
@@ -181,9 +182,8 @@ class ChatService:
             embedding = response_body.get("embedding")
             
             if not embedding:
-                raise ValueError("임베딩 생성에 실패했습니다.")
+                raise ChatException(message="임베딩 생성 실패: 응답에 임베딩이 없습니다.")
 
             return embedding
         except Exception as e:
-            print(f"Error creating embedding with Bedrock Titan: {e}")
-            raise
+            raise ChatException(message=f"임베딩 생성 중 오류 발생: {e}")
