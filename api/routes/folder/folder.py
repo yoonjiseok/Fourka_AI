@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials # HTTPBearer 임포트 
+from fastapi.security import HTTPBearer  # HTTPBearer 임포트
 
 from api.routes.folder.folderDTO import (
     FolderCreateDTO,
@@ -8,11 +7,11 @@ from api.routes.folder.folderDTO import (
     FolderDeleteDTO,
     FolderResponseDTO
 )
+from dependencies.auth_dependency import get_current_user  # 사용자 인증 의존성
 from dependencies.service_dependency import get_folder_service
-from dependencies.auth_dependency import get_current_user # 사용자 인증 의존성 
-from model.response_models import SuccessResponse # 공통 응답 모델 
+from exception.models.exception import BaseApiException
+from model.response_models import SuccessResponse  # 공통 응답 모델
 from service.folder.folder_service import FolderService
-from exception.models.exceptions import CustomException
 
 folder_router = APIRouter(prefix="/api/folders", tags=["Folder"]) # tags를 "Folder"로 변경하여 Swagger UI 그룹화
 
@@ -39,7 +38,7 @@ async def upload_folder(
             code=200
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"폴더 생성 중 오류가 발생했습니다: {str(e)}")
+        raise BaseApiException(status_code=500, message=f"폴더 생성 중 오류가 발생했습니다: {str(e)}")
 
 @folder_router.delete("/delete", response_model=SuccessResponse)
 async def delete_folder(
@@ -63,9 +62,9 @@ async def delete_folder(
             code=200
         )
     except KeyError: # JWT에 company_id가 없을 경우를 대비한 예외 처리
-        raise HTTPException(status_code=401, detail="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
+        raise BaseApiException(status_code=401, message="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"폴더 삭제 중 오류가 발생했습니다: {str(e)}")
+        raise BaseApiException(status_code=500, message=f"폴더 삭제 중 오류가 발생했습니다: {str(e)}")
     
 @folder_router.patch("/update", response_model=SuccessResponse)
 async def update_folder(
@@ -87,7 +86,7 @@ async def update_folder(
             code=200
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"폴더 이름 수정 중 오류가 발생했습니다: {str(e)}")
+        raise BaseApiException(status_code=500, message=f"폴더 이름 수정 중 오류가 발생했습니다: {str(e)}")
 
 @folder_router.get("/get-by-company", response_model=SuccessResponse)
 async def get_all_folders_by_company(
