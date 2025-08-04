@@ -13,9 +13,9 @@ security_scheme = HTTPBearer()
 
 @tag_router.post("/upload", response_model=SuccessResponse)
 async def upload_tag(
+    tag_dto: TagCreateDTO,
     current_user: dict = Depends(get_current_user),
-    tag_service: TagService = Depends(get_tag_service),
-    tag_dto: TagCreateDTO = Depends()
+    tag_service: TagService = Depends(get_tag_service)
 ):
     """태그 등록"""
     try:
@@ -41,14 +41,22 @@ async def upload_tag(
         raise HTTPException(status_code=500, detail=f"태그 등록 중 오류가 발생했습니다: {str(e)}")
 
 
-@tag_router.get("/{company_id}", response_model=SuccessResponse)
+@tag_router.get("", response_model=SuccessResponse)
 async def get_tags_by_company(
     current_user: dict = Depends(get_current_user),
     tag_service: TagService = Depends(get_tag_service),
-    company_id: int = Path(...)
 ):
     """회사별 태그 전체 조회"""
     try:
+        company_id = current_user.get("company_id")
+        
+        # 토큰에 company_id가 없는 경우 예외 처리
+        if not company_id:
+            raise HTTPException(
+                status_code=403,
+                detail="요청 권한이 없습니다 (토큰에 회사 정보가 없습니다)."
+            )
+
         tags = await tag_service.get_tags_by_company(company_id)
         
         return SuccessResponse(
@@ -57,5 +65,8 @@ async def get_tags_by_company(
             message="태그 목록을 성공적으로 조회했습니다.",
             code=200
         )
+    except HTTPException as he:
+        raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"태그 조회 중 오류가 발생했습니다: {str(e)}") 
+        # 그 외의 예외는 500 오류로 처리합니다.
+        raise HTTPException(status_code=500, detail=f"태그 조회 중 오류가 발생했습니다: {str(e)}")
