@@ -13,30 +13,10 @@ Python에서는 토큰 서명 검증과 payload 추출만 수행
 security = HTTPBearer(auto_error=True)
 
 def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)):
-    """
-    개발용 더미 사용자 정보 반환 (JWT 검증 비활성화)
-    
-    Args:
-        credentials: HTTPAuthorizationCredentials 객체 (Bearer 토큰 포함)
-    
-    Returns:
-        dict: 더미 사용자 정보
-    """
-    # 개발용 더미 데이터 반환 (토큰이 있든 없든 상관없이)
-    return {
-        "sub": "dev@example.com",
-        "user_id": 123,
-        "role": "admin",
-        "company_id" : 1
-    }
-    
-    """
-    실제 JWT 검증 코드 (개발 중 주석 처리)
-    
+
     if not credentials:
         raise HTTPException(status_code=401, detail="Authorization header required")
     
     token = credentials.credentials  # Bearer 토큰에서 실제 토큰 부분 추출
     payload = verify_jwt_token(token)
-    return payload 
-    """
+    return payload
