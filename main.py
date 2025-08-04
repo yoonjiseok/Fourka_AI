@@ -1,15 +1,13 @@
 from fastapi import FastAPI
+
 from api.routes.chat.chat import chat_router
 from api.routes.document.document import document_router
 from api.routes.faq.faq import faq_router
 from api.routes.faq.tag import tag_router
 from api.routes.feedback.feedback import feedback_router
+from api.routes.folder.folder import folder_router
 from exception.exception_handler import exception_handler
 from exception.models.exception import BaseApiException
-from api.routes.folder.folder import folder_router
-from database import models
-from utils.db import async_engine
-import asyncio
 
 app = FastAPI(
     title="CHATBOT",
