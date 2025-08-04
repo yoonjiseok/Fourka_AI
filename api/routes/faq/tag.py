@@ -7,7 +7,7 @@ from dependencies.auth_dependency import get_current_user
 from model.response_models import SuccessResponse
 from service.faq.tag_service import TagService
 
-tag_router = APIRouter(prefix="/api/faq-tag", tags=["FAQ Tag"])
+tag_router = APIRouter(prefix="/api/ai/faq-tag", tags=["FAQ Tag"])
 security_scheme = HTTPBearer()
 
 

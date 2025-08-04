@@ -8,7 +8,7 @@ from model import response_models
 from model.response_models import SuccessResponse
 from service.document.document_service import DocumentService
 
-document_router = APIRouter(prefix="/api/documents", tags=["files"])
+document_router = APIRouter(prefix="/api/ai/documents", tags=["files"])
 
 @document_router.patch("/pdf/update")
 async def update_pdf(
