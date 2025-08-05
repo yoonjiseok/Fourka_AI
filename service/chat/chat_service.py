@@ -32,7 +32,7 @@ class ChatService:
     async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int) -> chatDTO.ChatResponse:
         
         #FAQ 로직
-        FAQ_SIMILARITY_THRESHOLD = 0.2
+        FAQ_SIMILARITY_THRESHOLD = 0.9
         
         faq_results = self.chroma_service.search(
             user_question=message,
@@ -48,10 +48,14 @@ class ChatService:
             if distance < FAQ_SIMILARITY_THRESHOLD:
                 print("DEBUG: FAQ에서 답변을 찾았습니다.")
                 faq_answer = faq_results['metadatas'][0][0]['answer']
+                # original_faq_id 안전하게 가져오기
+                metadata = faq_results['metadatas'][0][0]
+                faq_id = metadata.get('original_faq_id', metadata.get('faq_id', 'unknown'))
+                
                 faq_metadata = [{
                     "source": "FAQ",
                     "original_question": faq_results['documents'][0][0],
-                    "faq_id": faq_results['metadatas'][0][0]['original_faq_id']
+                    "faq_id": faq_id
                 }]
                 
                 # FAQ 답변을 즉시 반환하고 함수 종료
