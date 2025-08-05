@@ -22,6 +22,7 @@ class FolderResponseDTO(BaseModel):
     name: str      # 폴더 이름
     company_id: int # 회사의 ID
     created_at: datetime # 생성 시간
+    updated_at: datetime # 수정 시간
 
     class Config:
         from_attributes = True # SQLAlchemy 모델로부터 객체를 생성할 수 있도록 설정
