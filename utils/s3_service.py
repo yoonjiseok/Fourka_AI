@@ -61,7 +61,7 @@ class S3Service:
             
             # 카카오 클라우드 URL 생성
             base_url = settings.S3_ENDPOINT_URL.rstrip('/')
-            s3_url = f"{base_url}/{self.bucket_name}/{s3_key}"
+            s3_url = f"{base_url}/v1/{settings.S3_PROJECT_ID}/{self.bucket_name}/{s3_key}"
             
             return s3_url
             
@@ -81,8 +81,8 @@ class S3Service:
             bool: 삭제 성공 여부
         """
         try:
-            # URL에서 S3 키 추출 (카카오 클라우드)
-            s3_key = s3_url.split(f"/{self.bucket_name}/")[1]
+            # URL에서 S3 키 추출 (카카오 클라우드 올바른 형식)
+            s3_key = s3_url.split(f"/v1/{settings.S3_PROJECT_ID}/{self.bucket_name}/")[1]
             
             # 카카오 클라우드에서 파일 삭제
             self.s3_client.delete_object(
