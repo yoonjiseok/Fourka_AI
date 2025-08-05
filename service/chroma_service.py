@@ -51,9 +51,9 @@ class ChromaFAQService:
             # Bedrock 클라이언트 초기화
             bedrock_runtime = boto3.client(
                 service_name="bedrock-runtime",
-                region_name=settings.AWS_REGION_NAME,
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+                region_name=settings.BEDROCK_REGION_NAME,
+                aws_access_key_id=settings.BEDROCK_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.BEDROCK_SECRET_ACCESS_KEY
             )
         except Exception as e:
             print(f"Error initializing AWS Bedrock client: {e}")

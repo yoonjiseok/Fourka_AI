@@ -12,7 +12,7 @@ class S3Service:
         try:
             # 카카오 클라우드 Object Storage 클라이언트 초기화
             client_config = {
-                'region_name': settings.S3_REGION,
+                'region_name': settings.S3_REGION_NAME,
                 'aws_access_key_id': settings.S3_ACCESS_KEY_ID,
                 'aws_secret_access_key': settings.S3_SECRET_ACCESS_KEY
             }
@@ -22,7 +22,7 @@ class S3Service:
                 
             self.s3_client = boto3.client('s3', **client_config)
             self.bucket_name = settings.S3_BUCKET_NAME
-            self.region = settings.S3_REGION
+            self.region = settings.S3_REGION_NAME
             
         except NoCredentialsError:
             raise Exception("카카오 클라우드 인증 정보가 설정되지 않았습니다.")
