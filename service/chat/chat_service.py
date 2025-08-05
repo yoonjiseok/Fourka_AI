@@ -32,7 +32,7 @@ class ChatService:
     async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int) -> chatDTO.ChatResponse:
         
         #FAQ 로직
-        FAQ_SIMILARITY_THRESHOLD = 0.9
+        FAQ_SIMILARITY_THRESHOLD = 0.3
         
         faq_results = self.chroma_service.search(
             user_question=message,
