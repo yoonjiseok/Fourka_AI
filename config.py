@@ -10,10 +10,22 @@ class Settings(BaseSettings):
     AWS_REGION_NAME: str
     BEDROCK_EMBEDDING_MODEL_ID: str
     BEDROCK_LLM_MODEL_ID: str
-
-    GEMINI_API_KEY: str  # Gemini API 키
+    
+    # S3 설정 
+    S3_BUCKET_NAME: str
+    S3_REGION: str
+    S3_ACCESS_KEY_ID: str
+    S3_SECRET_ACCESS_KEY: str
+    S3_ENDPOINT_URL: str  
+    
     API_PREFIX: str
 
+    # FourKa DB 개별 설정
+    FOURKA_DB_HOST: str
+    FOURKA_DB_PORT: str
+    FOURKA_DB_NAME: str
+    FOURKA_DB_USER: str
+    FOURKA_DB_PASSWORD: str
 
     # --- 기존 변수들 ---
     DEBUG: bool = True
