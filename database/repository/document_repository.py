@@ -126,3 +126,14 @@ class DocumentRepository:
         await self.db.execute(stmt)
         await self.db.commit()
 
+    async def get_s3_url(self, doc_id: int) -> str | None:
+        """doc_id로 문서의 S3 URL을 조회합니다."""
+        stmt = select(Document.url).where(Document.doc_id == doc_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_using_doc_id(self) -> int | None:
+        """현재 사용 중(is_used=True)인 문서의 ID를 조회합니다."""
+        stmt = select(Document.doc_id).where(Document.is_used == True)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()

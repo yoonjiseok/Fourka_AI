@@ -1,4 +1,6 @@
 # 의존성 주입 파일
+from typing import AsyncGenerator
+
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,7 +11,8 @@ from database.repository.faq_repository import FAQRepository
 from database.repository.tag_repository import TagRepository
 from database.repository.feedback_repository import FeedbackRepository
 from database.repository.folder_repository import FolderRepository
-from utils.db import get_db
+from service.redis.redis_service import RedisService
+from utils.db import get_db, redis_client
 
 
 def get_document_repository(db: AsyncSession = Depends(get_db)) -> DocumentRepository:
@@ -33,3 +36,7 @@ def get_feedback_repository(db: AsyncSession = Depends(get_db)) -> FeedbackRepos
 
 def get_folder_repository(db: AsyncSession = Depends(get_db)) -> FolderRepository: # 추가
     return FolderRepository(db)
+
+def get_redis_service() -> RedisService:
+    """RedisService 인스턴스를 생성하는 의존성 함수"""
+    return RedisService(redis_client=redis_client)

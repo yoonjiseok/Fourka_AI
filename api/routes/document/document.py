@@ -4,6 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from api.routes.document import documentDTO
 from dependencies.auth_dependency import get_current_user
 from dependencies.service_dependency import get_document_service
+from exception.models.exception import DocumentException
 from model import response_models
 from model.response_models import SuccessResponse
 from service.document.document_service import DocumentService
@@ -106,3 +107,21 @@ async def change_main_document(
         message="Main document changed successfully",
         code=200
 )
+
+
+@document_router.get("/modified-part/{doc_id}", response_model=SuccessResponse)
+async def get_modified_part(
+    doc_id: int = Path(..., title="Document ID"),
+        current_user: dict = Depends(get_current_user),
+        document_service: DocumentService = Depends(get_document_service),
+):
+    """
+    특정 문서와 현재 사용 중인 문서를 비교하여 변경된 부분을 반환합니다.
+    결과는 Redis에 24시간 동안 캐싱됩니다.
+    """
+    try:
+        changed_part = await document_service.compare_two_docs(doc_id=doc_id)
+        clean_text = changed_part.replace("\u0001", "")
+        return SuccessResponse(result=clean_text)
+    except Exception as e:
+        raise DocumentException(status_code=500, reason=f"An unexpected error occurred: {e}")

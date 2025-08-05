@@ -16,9 +16,9 @@ class ChatService:
             # AWS Bedrock 클라이언트 설정
             self.bedrock_runtime = boto3.client(
                 service_name="bedrock-runtime",
-                region_name=settings.AWS_REGION_NAME,
-                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+                region_name=settings.BEDROCK_REGION_NAME,
+                aws_access_key_id=settings.BEDROCK_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.BEDROCK_SECRET_ACCESS_KEY
             )
             # 설정에서 Bedrock 모델 ID 가져오기
             self.embedding_model_id = settings.BEDROCK_EMBEDDING_MODEL_ID
