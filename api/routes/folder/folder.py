@@ -88,7 +88,7 @@ async def update_folder(
     except Exception as e:
         raise BaseApiException(status_code=500, message=f"폴더 이름 수정 중 오류가 발생했습니다: {str(e)}")
 
-@folder_router.get("/get-by-company", response_model=SuccessResponse)
+@folder_router.get("", response_model=SuccessResponse)
 async def get_all_folders_by_company(
     current_user: dict = Depends(get_current_user), # 사용자 인증 
     folder_service: FolderService = Depends(get_folder_service)

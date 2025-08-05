@@ -13,9 +13,9 @@ security_scheme = HTTPBearer()
 
 @faq_router.post("/upload", response_model=SuccessResponse)
 async def upload_faq(
+    faq_dto: FAQCreateDTO,
     current_user: dict = Depends(get_current_user),
     faq_service: FAQService = Depends(get_faq_service),
-    faq_dto: FAQCreateDTO = Depends()
 ):
     """FAQ 등록"""
     try:
@@ -46,9 +46,9 @@ async def upload_faq(
 
 @faq_router.put("/update", response_model=SuccessResponse)
 async def update_faq(
+    faq_dto: FAQUpdateDTO,
     current_user: dict = Depends(get_current_user),
     faq_service: FAQService = Depends(get_faq_service),
-    faq_dto: FAQUpdateDTO = Depends()
 ):
     """FAQ 수정"""
     try:
@@ -81,9 +81,9 @@ async def update_faq(
 
 @faq_router.delete("/delete", response_model=SuccessResponse)
 async def delete_faq(
+    faq_dto: FAQDeleteDTO,
     current_user: dict = Depends(get_current_user),
     faq_service: FAQService = Depends(get_faq_service),
-    faq_dto: FAQDeleteDTO = Depends()
 ):
     """FAQ 삭제"""
     try:
@@ -102,15 +102,16 @@ async def delete_faq(
         raise HTTPException(status_code=500, detail=f"FAQ 삭제 중 오류가 발생했습니다: {str(e)}")
 
 
-@faq_router.get("/{company_id}", response_model=SuccessResponse)
+@faq_router.get("", response_model=SuccessResponse)
 async def get_faqs_by_company(
-    # 토큰 인증 주석 처리
-    #token: Annotated[HTTPAuthorizationCredentials, Security(security_scheme)],
-    company_id: int,
+    current_user: dict = Depends(get_current_user),
     faq_service: FAQService = Depends(get_faq_service)
 ):
-    """회사별 FAQ 전체 조회"""
+    """회사별 FAQ 전체 조회 (토큰 인증 기반)"""
     try:
+        # 토큰에 담긴 사용자 정보에서 company_id를 가져옵니다.
+        company_id = current_user["company_id"]
+        
         faqs = await faq_service.get_faqs_by_company(company_id)
         
         return SuccessResponse(
@@ -119,5 +120,8 @@ async def get_faqs_by_company(
             message="FAQ 목록을 성공적으로 조회했습니다.",
             code=200
         )
+    except KeyError:
+        # 토큰에 company_id가 없는 경우 예외 처리
+        raise HTTPException(status_code=401, detail="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"FAQ 조회 중 오류가 발생했습니다: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"FAQ 조회 중 오류가 발생했습니다: {str(e)}")
