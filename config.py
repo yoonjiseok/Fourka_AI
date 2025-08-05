@@ -16,7 +16,8 @@ class Settings(BaseSettings):
     S3_REGION: str
     S3_ACCESS_KEY_ID: str
     S3_SECRET_ACCESS_KEY: str
-    S3_ENDPOINT_URL: str  
+    S3_ENDPOINT_URL: str
+    S3_PROJECT_ID: str  # 카카오클라우드 프로젝트 ID  
     
     API_PREFIX: str
 
