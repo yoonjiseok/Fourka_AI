@@ -85,7 +85,7 @@ def send_decay_summary(**context):
     else:
         raise ValueError("Decay 로그를 찾을 수 없습니다.")
 
-# Task 1: 로그 테이블 생성 (냪등 연산)
+# Task 1: 로그 테이블 생성
 create_logs_table = PythonOperator(
     task_id='create_decay_logs_table',
     python_callable=create_decay_logs_table,
