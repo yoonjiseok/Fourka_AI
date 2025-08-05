@@ -22,7 +22,7 @@ class DocumentRepository:
             await self.db.refresh(document)
             return document.doc_id, document.title
 
-    async def create_document(self, title: str, version: str, folder_id: int, commit_message: str) -> None:
+    async def create_document(self, title: str, version: str, folder_id: int, commit_message: str, url: str = None) -> None:
         """
         새로운 문서를 데이터베이스에 저장합니다.
         """
@@ -31,13 +31,20 @@ class DocumentRepository:
             title=title,
             version=version,
             folder_id=folder_id,
-            commit_message=commit_message
+            commit_message=commit_message,
+            url=url
         )
         
         self.db.add(new_document)
         await self.db.commit()
         await self.db.refresh(new_document)
         return new_document.doc_id, new_document.title, new_document.version, new_document.created_at
+
+    async def get_document_by_id(self, doc_id: int):
+        """
+        문서 ID로 문서 정보를 조회합니다.
+        """
+        return await self.db.get(Document, doc_id)
 
     async def create_chunk(self, doc_id: int, embedding: list, metadata: dict):
         """
