@@ -97,33 +97,4 @@ class S3Service:
             return False
         except Exception as e:
             print(f"파일 삭제 중 오류 발생: {e}")
-            return False
-
-    def get_presigned_url(self, s3_url: str, expiration: int = 3600) -> str:
-        """
-        카카오 클라우드 파일에 대한 Presigned URL을 생성합니다.
-        
-        Args:
-            s3_url: 카카오 클라우드 파일 URL
-            expiration: URL 만료 시간 (초, 기본값: 1시간)
-            
-        Returns:
-            str: Presigned URL
-        """
-        try:
-            # URL에서 S3 키 추출 (카카오 클라우드)
-            s3_key = s3_url.split(f"/{self.bucket_name}/")[1]
-            
-            # Presigned URL 생성
-            presigned_url = self.s3_client.generate_presigned_url(
-                'get_object',
-                Params={'Bucket': self.bucket_name, 'Key': s3_key},
-                ExpiresIn=expiration
-            )
-            
-            return presigned_url
-            
-        except ClientError as e:
-            raise Exception(f"Presigned URL 생성 실패: {e}")
-        except Exception as e:
-            raise Exception(f"URL 생성 중 오류 발생: {e}")
+            return False    
