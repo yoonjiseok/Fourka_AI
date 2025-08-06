@@ -4,5 +4,5 @@ from database.models import FeedbackType
 class FeedbackCreateDTO(BaseModel):
     chat_id: int
     feedback_type: FeedbackType
-    content: str
+    feedback_content: str
     answer: str
