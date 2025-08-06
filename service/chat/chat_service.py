@@ -7,6 +7,7 @@ from database.repository.chat_repository import ChatRepository
 from service.chat import HIL_service
 from service.chroma_service import chroma_faq_service
 from exception.models.exception import ChatException
+from database.models import ChatType
 
 class ChatService:
     def __init__(self, chat_repository: ChatRepository):
@@ -57,6 +58,14 @@ class ChatService:
                     "original_question": faq_results['documents'][0][0],
                     "faq_id": faq_id
                 }]
+
+                await self.chat_repository.save_chat(
+                    message=message,
+                    chunk_ids=[],
+                    chat_room_id=chat_room_id,
+                    user_id=user_id,
+                    chat_type=ChatType.FAQ
+                )
                 
                 # FAQ 답변을 즉시 반환하고 함수 종료
                 return chatDTO.ChatResponse(
@@ -147,15 +156,25 @@ class ChatService:
         except Exception as e:
             raise ChatException(message=f"챗봇 응답 생성 중 오류 발생: {e}")
 
-        metadata = [
-        {
-            "source": "Document",
-            "title": chunk.title,  
-            "chunk_id": chunk.chunk_id 
-        }
-        for chunk in similar_chunks
-        ]
+       
+        chunk_ids = []
+        for chunk in similar_chunks:
+            chunk_ids.append(chunk[1])
+            metadata = [
+                {
+                    "source": "Document",
+                    "title": chunk.title,  
+                    "chunk_id": chunk.chunk_id 
+                }
+            ]
 
+        await self.chat_repository.save_chat(
+            message=message,
+            chunk_ids=chunk_ids,
+            chat_room_id=chat_room_id,
+            user_id=user_id,
+            chat_type=ChatType.DOC
+        )
 
         return chatDTO.ChatResponse(
             answer=answer,
