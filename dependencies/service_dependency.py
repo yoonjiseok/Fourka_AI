@@ -3,6 +3,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.repository.chat_repository import ChatRepository
 from database.repository.chunk_repository import ChunkRepository
+from database.repository.company_repository import CompanyRepository
 from database.repository.document_repository import DocumentRepository
 from database.repository.tag_repository import TagRepository
 from database.repository.feedback_repository import FeedbackRepository
@@ -34,8 +35,10 @@ def get_faq_service(db_session: AsyncSession = Depends(get_db)) -> FAQService:
 def get_tag_service(tag_repo: TagRepository = Depends(get_tag_repository)) -> TagService:
     return TagService(tag_repo)
 
-def get_chat_service(repo: ChatRepository = Depends(get_chat_repository)) -> ChatService:
-    return ChatService(repo)
+def get_chat_service(db: AsyncSession = Depends(get_db)):
+    chat_repo = ChatRepository(db)
+    company_repo = CompanyRepository(db) 
+    return ChatService(chat_repository=chat_repo, company_repository=company_repo)
 
 
 def get_feedback_service(
