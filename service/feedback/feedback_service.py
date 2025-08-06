@@ -29,3 +29,10 @@ class FeedbackService:
             
         return created_feedback
     
+    async def get_company_unlike_feedback_list(self, company_id: int):
+        """회사별 unlike 피드백 목록 조회 (View 사용)"""
+        return await self.feedback_repository.get_company_unlike_feedback_list(company_id)
+    
+    async def get_company_feedback_list(self, company_id: int):
+        """회사별 모든 피드백 목록 조회 (View 사용)"""
+        return await self.feedback_repository.get_company_feedback_list(company_id)
