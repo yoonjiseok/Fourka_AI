@@ -40,6 +40,10 @@ class FeedbackType(enum.Enum):
     LIKE = "LIKE"
     UNLIKE = "UNLIKE"
 
+class ChatType(enum.Enum):
+    CHAT = "FAQ"
+    FAQ = "DOC"
+
 
 # 3. 참조되는 모델들을 먼저 정의
 class Company(Base, TimestampMixin):
@@ -156,7 +160,8 @@ class Chat(Base, TimestampMixin):
     __tablename__ = "chat"
     
     chat_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    message: Mapped[str] = mapped_column(nullable=False)
+    chat_type: Mapped[ChatType] = mapped_column(Enum(ChatType), nullable=False, default=ChatType.CHAT)
+    question: Mapped[str] = mapped_column(nullable=False)
     chat_room_id: Mapped[int] = mapped_column(ForeignKey("chat_room.chat_room_id"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"), nullable=False)
     chunk_ids: Mapped[List] = mapped_column(JSONB, nullable=False, server_default="'[]'::jsonb")
@@ -202,8 +207,8 @@ class Feedback(Base, TimestampMixin):
     feedback_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     chat_id: Mapped[int] = mapped_column(ForeignKey("chat.chat_id"), nullable=False)
     feedback_type: Mapped[FeedbackType] = mapped_column(Enum(FeedbackType), nullable=False)
-    answer: Mapped[str] = mapped_column(nullable=False)
-    content: Mapped[str] = mapped_column(nullable=False)
+    answer: Mapped[str] = mapped_column(nullable=False) # 채팅 답변
+    feedback_content: Mapped[str] = mapped_column(nullable=False) # 사용자 피드백 내용
 
     # 관계(relationship)
     chat: Mapped["Chat"] = relationship(back_populates="feedback")
