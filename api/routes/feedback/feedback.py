@@ -21,7 +21,7 @@ async def create_feedback(
         feedback = Feedback(
             chat_id=feedback_dto.chat_id,
             feedback_type=feedback_dto.feedback_type,
-            content=feedback_dto.content,
+            feedback_content=feedback_dto.feedback_content,
             answer=feedback_dto.answer
         )
         
@@ -37,3 +37,19 @@ async def create_feedback(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"피드백 생성 중 오류가 발생했습니다: {str(e)}")
+    
+@feedback_router.get("/unlike_feedback_list", response_model=SuccessResponse)
+async def get_unlike_feedback_list(
+    company_id: int,
+    feedback_service: FeedbackService = Depends(get_feedback_service)
+):
+    try:
+         unlike_feedback_list = await feedback_service.get_company_unlike_feedback_list(company_id)
+         return SuccessResponse(
+            success=True,   
+            result=jsonable_encoder(unlike_feedback_list),
+             message="싫어요 피드백 목록이 성공적으로 조회되었습니다.",
+             code=200
+         )
+    except Exception as e:
+       raise HTTPException(status_code=500, detail=f"싫어요 피드백 목록 조회 중 오류가 발생했습니다: {str(e)}")
