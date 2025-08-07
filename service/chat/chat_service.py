@@ -19,7 +19,6 @@ class ChatService:
     async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int):
         
         # --- 1. 재질문에 대한 답변인지 확인 ---
-        # 캐시에 해당 채팅방의 이전 HIL 컨텍스트가 저장되어 있는지 확인
         cached_context = hil_context_cache.get(chat_room_id)
         
         if cached_context:
@@ -46,7 +45,6 @@ class ChatService:
             # 다음 턴에서 사용할 컨텍스트(final_metadata)를 캐시에 저장
             hil_context_cache[chat_room_id] = final_state["final_metadata"]
 
-        # 최종 답변을 사용자에게 반환
         return chatDTO.ChatResponse(
             answer=final_state['final_answer'],
             metadata=final_state['final_metadata']
@@ -61,11 +59,9 @@ class ChatService:
         ]
 
         if not filtered_context:
-            # 사용자가 이상한 답변을 했을 경우
+            
             return chatDTO.ChatResponse(answer="선택지에 없는 주제입니다. 다시 질문해주세요.", metadata=[])
 
-        # LLM 답변 생성 노드의 로직을 재사용
-        # (실제 구현에서는 이 부분을 ChatGraph의 generate_llm_answer_node와 합쳐 중복을 제거하는 것이 좋습니다)
         state_for_generation = {
             "context_list": filtered_context,
             "user_question": user_choice,

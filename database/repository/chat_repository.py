@@ -1,21 +1,23 @@
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Chat
+from database.models import ChatType
 
 class ChatRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
 
-    async def save_chat(self, message: str, chunk_ids: list, chat_room_id: int, user_id: int) -> int:
+    async def save_chat(self, question: str, chunk_ids: list, chat_room_id: int, user_id: int, chat_type: ChatType) -> int:
         """
         채팅 메시지와 관련 chunk_id들을 데이터베이스에 저장합니다.
         """
         chat = Chat(
-            message=message,
+            question=question,
             chunk_ids=chunk_ids,
             chat_room_id=chat_room_id,
-            user_id=user_id
+            user_id=user_id,
+            chat_type=chat_type
         )
         
         self.db.add(chat)
