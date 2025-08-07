@@ -32,6 +32,8 @@ class GraphState(TypedDict):
     final_answer: str
     final_metadata: List[dict]
 
+    is_re_prompt: bool
+
 
 # --- 2. 그래프 관리 클래스 ---
 class ChatGraph:
@@ -117,15 +119,31 @@ class ChatGraph:
         return {"is_hil_triggered": True}
 
     # generate_hil_response_node 정의
-    def generate_hil_response_node(self, state: GraphState) -> dict:
-        """[노드 4-A] HIL 응답을 생성합니다."""
-        print("--- 노드 4-A: HIL 응답 생성 ---")
-        metadata = state["context_list"]
-        ans_list = [{"문서 제목": data['title'], "문서 페이지": data['page_number']} for data in metadata]
+    def generate_hil_re_prompt_node(self, state: GraphState) -> dict:
+        """
+        [노드 4-A] HIL이 발동했을 때, 사용자에게 되물을 질문을 생성합니다.
+        """
+        print("--- 노드 4-A: HIL 재질문 생성 ---")
+        context = state["context_list"]
         
-        answer = "검색결과가 없습니다. 유사한 문서는 아래의 부분입니다. 만약 해당 부분에서도 원하시는 정보가 없을 시 FAQ에 문의해주세요."
-        return {"final_answer": answer, "final_metadata": ans_list}
-
+        # 문서 제목들을 추출하여 선택지로 만듭니다. (중복 제거)
+        topics = sorted(list(set([item['title'] for item in context])))
+        
+        # 사용자에게 되물을 프롬프트 생성
+        re_prompt_message = (
+            "관련성이 높은 답변을 찾지 못했습니다. "
+            "대신 아래 주제들에 대한 정보를 드릴 수 있습니다. 어떤 주제에 대해 더 알려드릴까요?\n\n"
+            f"선택 가능한 주제: {', '.join(topics)}"
+        )
+        
+        # 그래프의 최종 상태를 업데이트합니다.
+        # is_re_prompt=True 플래그와 함께, 재질문에 필요한 context_list를 final_metadata에 담아 반환합니다.
+        return {
+            "final_answer": re_prompt_message,
+            "final_metadata": context, # 중요: 다음 턴에서 사용할 컨텍스트를 메타데이터에 저장
+            "is_re_prompt": True
+        }
+    
     # generate_llm_answer_node 정의
     def generate_llm_answer_node(self, state: GraphState) -> dict:
         """[노드 4-B] LLM을 통해 답변을 생성합니다."""
@@ -185,11 +203,11 @@ class ChatGraph:
         """그래프의 노드와 엣지를 연결하여 실행 가능한 app을 만듭니다."""
         workflow = StateGraph(GraphState)
 
-        # 노드 추가
+        # 노드 추가 (generate_hil_response_node 대신 새로운 노드 추가)
         workflow.add_node("faq_search", self.faq_search_node)
         workflow.add_node("rag_retrieve", self.rag_retrieve_node)
         workflow.add_node("hil_check", self.hil_check_node)
-        workflow.add_node("generate_hil_response", self.generate_hil_response_node)
+        workflow.add_node("generate_hil_re_prompt", self.generate_hil_re_prompt_node) # 이름 변경 및 추가
         workflow.add_node("generate_llm_answer", self.generate_llm_answer_node)
 
         # 엣지 연결
@@ -203,13 +221,18 @@ class ChatGraph:
         
         workflow.add_edge("rag_retrieve", "hil_check")
 
+        # HIL 체크 후 분기 로직 수정
         workflow.add_conditional_edges(
             "hil_check",
             self.decide_hil_or_generate,
-            {"trigger_hil": "generate_hil_response", "generate_with_llm": "generate_llm_answer"}
+            {
+                "trigger_hil": "generate_hil_re_prompt", # HIL 발동 시 재질문 노드로 연결
+                "generate_with_llm": "generate_llm_answer"
+            }
         )
 
-        workflow.add_edge("generate_hil_response", END)
+        # 재질문 노드와 LLM 답변 노드 모두 그래프를 종료시킵니다.
+        workflow.add_edge("generate_hil_re_prompt", END)
         workflow.add_edge("generate_llm_answer", END)
 
         return workflow.compile()
