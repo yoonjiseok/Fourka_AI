@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     BEDROCK_EMBEDDING_MODEL_ID: str
     BEDROCK_LLM_MODEL_ID: str
 
-    #Bedrock guardrail 설정\
+    # Bedrock 가드레일
     BEDROCK_GUARDRAIL_ID: str
     BEDROCK_GUARDRAIL_VERSION: str
 

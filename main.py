@@ -6,6 +6,7 @@ from api.routes.faq.faq import faq_router
 from api.routes.faq.tag import tag_router
 from api.routes.feedback.feedback import feedback_router
 from api.routes.folder.folder import folder_router
+from api.routes.health.health import health_router
 from exception.exception_handler import exception_handler
 from exception.models.exception import BaseApiException
 
@@ -17,6 +18,7 @@ app = FastAPI(
 # 테이블 생성은 이제 Alembic으로 관리됩니다
 # 마이그레이션 적용: alembic upgrade head
 
+app.include_router(health_router)
 app.include_router(chat_router)
 app.include_router(document_router)
 app.include_router(faq_router)
