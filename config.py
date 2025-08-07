@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     BEDROCK_EMBEDDING_MODEL_ID: str
     BEDROCK_LLM_MODEL_ID: str
 
+    # Bedrock 가드레일
+    BEDROCK_GUARDRAIL_ID: str
+    BEDROCK_GUARDRAIL_VERSION: str
+
     # S3 설정
     S3_BUCKET_NAME: str
     S3_REGION_NAME: str
