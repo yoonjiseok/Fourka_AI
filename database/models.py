@@ -40,6 +40,14 @@ class FeedbackType(enum.Enum):
     LIKE = "LIKE"
     UNLIKE = "UNLIKE"
 
+# 피드백 사유를 위한 Enum 클래스 정의
+class FeedbackReason(enum.Enum):
+    OUTDATED_INFO = "OUTDATED_INFO"
+    INTENT_FAILURE = "INTENT_FAILURE"
+    WRONG_ANSWER = "WRONG_ANSWER"
+    MISSING_INFO = "MISSING_INFO"
+    OTHER = "OTHER"
+
 class ChatType(enum.Enum):
     CHAT = "FAQ"
     FAQ = "DOC"
@@ -208,7 +216,8 @@ class Feedback(Base, TimestampMixin):
     chat_id: Mapped[int] = mapped_column(ForeignKey("chat.chat_id"), nullable=False)
     feedback_type: Mapped[FeedbackType] = mapped_column(Enum(FeedbackType), nullable=False)
     answer: Mapped[str] = mapped_column(nullable=False) # 채팅 답변
-    feedback_content: Mapped[str] = mapped_column(nullable=False) # 사용자 피드백 내용
+    feedback_reason: Mapped[FeedbackReason] = mapped_column(Enum(FeedbackReason), nullable=True) # 피드백 사유 (선택지)
+    feedback_content: Mapped[str] = mapped_column(nullable=True) # 사용자 피드백 내용 (기타 선택 시)
 
     # 관계(relationship)
     chat: Mapped["Chat"] = relationship(back_populates="feedback")
