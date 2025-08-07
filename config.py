@@ -11,7 +11,6 @@ class Settings(BaseSettings):
     BEDROCK_REGION_NAME: str
     BEDROCK_EMBEDDING_MODEL_ID: str
     BEDROCK_LLM_MODEL_ID: str
-    GEMINI_API_KEY: str
 
     #Bedrock guardrail 설정\
     BEDROCK_GUARDRAIL_ID: str
