@@ -159,7 +159,8 @@ class ChatGraph:
             messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
             body = json.dumps({"anthropic_version": "bedrock-2023-05-31", "max_tokens": 1024, "messages": messages})
             response = self.bedrock_runtime.invoke_model(
-                body=body, modelId=self.llm_model_id, accept="application/json", contentType="application/json"
+                body=body, modelId=self.llm_model_id, accept="application/json", contentType="application/json",
+                guardrailIdentifier=settings.BEDROCK_GUARDRAIL_ID, guardrailVersion=settings.BEDROCK_GUARDRAIL_VERSION
             )
             response_body = json.loads(response.get("body").read())
             answer = response_body['content'][0]['text']
