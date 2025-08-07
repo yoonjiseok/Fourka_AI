@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     # S3_REGION_NAME: str -> S3_REGION과 중복되므로 삭제합니다.
 
     REDIS_URL: str
-    GEMINI_API_KEY: str  # .env에 있는 변수 추가
+
 
 
 settings = Settings()
