@@ -67,3 +67,13 @@ class AIException(BaseApiException):
         field: Optional[str] = "ai",
     ):
         super().__init__(status_code, message, reason, field)
+
+class FolderException(BaseApiException):
+    def __init__(
+        self,
+        status_code: int = 500,
+        message: str = "폴더 관련 요청에 실패했습니다.",
+        reason: str = "폴더 처리 중 오류가 발생했습니다.",
+        field: Optional[str] = "folder",
+    ):
+        super().__init__(status_code, message, reason, field)

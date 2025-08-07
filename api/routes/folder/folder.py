@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBearer  # HTTPBearer 임포트
 
 from api.routes.folder.folderDTO import (
@@ -9,7 +9,7 @@ from api.routes.folder.folderDTO import (
 )
 from dependencies.auth_dependency import get_current_user  # 사용자 인증 의존성
 from dependencies.service_dependency import get_folder_service
-from exception.models.exception import BaseApiException
+from exception.models.exception import FolderException
 from model.response_models import SuccessResponse  # 공통 응답 모델
 from service.folder.folder_service import FolderService
 
@@ -26,19 +26,18 @@ async def upload_folder(
     """
     새로운 문서 폴더를 생성합니다.
     """
-    try:
-        new_folder = await folder_service.create_folder(
-            name=folder_dto.name,
-            company_id=folder_dto.company_id
-        )
-        # FolderResponseDTO를 사용하여 응답 결과 형식을 맞춥니다.
-        return SuccessResponse(
-            result=FolderResponseDTO.model_validate(new_folder).model_dump(), # Pydantic v2 .model_dump() 사용
-            message="폴더가 성공적으로 생성되었습니다.",
-            code=200
-        )
-    except Exception as e:
-        raise BaseApiException(status_code=500, message=f"폴더 생성 중 오류가 발생했습니다: {str(e)}")
+
+    new_folder = await folder_service.create_folder(
+        name=folder_dto.name,
+        company_id=folder_dto.company_id
+    )
+    # FolderResponseDTO를 사용하여 응답 결과 형식을 맞춥니다.
+    return SuccessResponse(
+        result=FolderResponseDTO.model_validate(new_folder).model_dump(), # Pydantic v2 .model_dump() 사용
+        message="폴더가 성공적으로 생성되었습니다.",
+        code=200
+    )
+
 
 @folder_router.delete("/delete", response_model=SuccessResponse)
 async def delete_folder(
@@ -62,9 +61,10 @@ async def delete_folder(
             code=200
         )
     except KeyError: # JWT에 company_id가 없을 경우를 대비한 예외 처리
-        raise BaseApiException(status_code=401, message="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
-    except Exception as e:
-        raise BaseApiException(status_code=500, message=f"폴더 삭제 중 오류가 발생했습니다: {str(e)}")
+        raise FolderException(
+            status_code=401, message="인증오류",
+            reason="유효한 토큰이 아니거나 토큰에 company_id가 없습니다.", field="token"
+            )
     
 @folder_router.patch("/update", response_model=SuccessResponse)
 async def update_folder(
@@ -75,18 +75,15 @@ async def update_folder(
     """
     문서 폴더의 이름을 수정합니다.
     """
-    try:
-        updated_folder = await folder_service.update_folder_name(
-            folder_dto.folder_id,
-            folder_dto.name
-        )
-        return SuccessResponse(
-            result=FolderResponseDTO.model_validate(updated_folder).model_dump(),
-            message="폴더 이름이 성공적으로 수정되었습니다.",
-            code=200
-        )
-    except Exception as e:
-        raise BaseApiException(status_code=500, message=f"폴더 이름 수정 중 오류가 발생했습니다: {str(e)}")
+    updated_folder = await folder_service.update_folder_name(
+        folder_dto.folder_id,
+        folder_dto.name
+    )
+    return SuccessResponse(
+        result=FolderResponseDTO.model_validate(updated_folder).model_dump(),
+        message="폴더 이름이 성공적으로 수정되었습니다.",
+        code=200
+    )
 
 @folder_router.get("", response_model=SuccessResponse)
 async def get_all_folders_by_company(
@@ -108,6 +105,7 @@ async def get_all_folders_by_company(
             code=200
         )
     except KeyError: # JWT에 company_id가 없을 경우를 대비한 예외 처리
-        raise HTTPException(status_code=401, detail="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"폴더 조회 중 오류가 발생했습니다: {str(e)}")
+        raise FolderException(
+            status_code=401, message="인증오류",
+            reason="유효한 토큰이 아니거나 토큰에 company_id가 없습니다.", field="token"
+            )

@@ -39,16 +39,23 @@ class FolderRepository:
 
     async def delete_folder(self, folder_id: int, company_id: int) -> bool: #굳이 싶어서 
         """폴더를 삭제합니다. (연관된 문서들도 함께 삭제됩니다 - cascade 설정)"""
-        # Document 모델에 cascade="all, delete-orphan" 설정이 되어 있으므로,
-        # Folder를 삭제하면 해당 Folder에 연결된 Document들도 자동으로 삭제됩니다.
-        # 또한 Document에 연결된 Chunk들도 자동으로 삭제됩니다.
-        stmt = delete(Folder).where(
+        # 1. 삭제할 폴더 객체를 먼저 조회합니다.
+        stmt = select(Folder).where(
             Folder.folder_id == folder_id,
             Folder.company_id == company_id
-            )
+        )
         result = await self.db.execute(stmt)
-        await self.db.commit() # 변경사항 커밋
-        return result.rowcount > 0 # 삭제된 행이 1개 이상이면 True 반환
+        folder_to_delete = result.scalar_one_or_none()
+
+        # 2. 조회된 객체가 있을 경우, 해당 객체를 삭제합니다.
+        if folder_to_delete:
+            await self.db.delete(folder_to_delete)
+            await self.db.commit()
+            return True
+        
+        # 3. 삭제할 폴더가 없는 경우
+        return False
+        
 
     async def check_folder_exists_by_name(self, name: str, company_id: int) -> bool:
         """같은 회사 내에 동일한 이름의 폴더가 존재하는지 확인합니다."""
