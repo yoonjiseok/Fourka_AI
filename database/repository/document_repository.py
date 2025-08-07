@@ -120,7 +120,7 @@ class DocumentRepository:
         # 새로운 메인 문서 설정
         stmt = (
             update(Document)
-            .where(Document.doc_id == doc_id)
+            .where((Document.doc_id == doc_id) & (Document.folder_id == folder_id))
             .values(is_used=True)
         )
         await self.db.execute(stmt)
@@ -132,8 +132,8 @@ class DocumentRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_using_doc_id(self) -> int | None:
+    async def get_using_doc_id(self, folder_id) -> int | None:
         """현재 사용 중(is_used=True)인 문서의 ID를 조회합니다."""
-        stmt = select(Document.doc_id).where(Document.is_used == True)
+        stmt = select(Document.doc_id).where((Document.folder_id == folder_id)&(Document.is_used == True))
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

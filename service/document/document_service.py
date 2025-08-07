@@ -159,12 +159,12 @@ class DocumentService:
             print(f"PDF 처리 중 오류 발생: {e}")
             return ""
 
-    async def compare_two_docs(self, doc_id: int) -> str:
+    async def compare_two_docs(self, doc_id: int, folder_id: int) -> str:
         """
         S3에서 문서를 가져와 비교하고, Redis 캐시를 활용합니다.
         """
         # 1. 기준 문서와 비교 대상 문서의 ID를 가져옵니다.
-        using_doc_id = await self.document_repository.get_using_doc_id()
+        using_doc_id = await self.document_repository.get_using_doc_id(folder_id=folder_id)
         if not using_doc_id:
             raise ValueError("기준이 되는 문서를 찾을 수 없습니다.")
 
