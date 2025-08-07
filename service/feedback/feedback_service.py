@@ -4,6 +4,7 @@ from database.repository.chunk_repository import ChunkRepository
 from database.repository.chat_repository import ChatRepository
 from database.models import Feedback
 from database.models import FeedbackType
+from typing import List
 
 class FeedbackService:
     def __init__(self, feedback_repository: FeedbackRepository, chunk_repository: ChunkRepository, chat_repository: ChatRepository):
@@ -36,3 +37,23 @@ class FeedbackService:
     async def get_company_feedback_list(self, company_id: int):
         """회사별 모든 피드백 목록 조회 (View 사용)"""
         return await self.feedback_repository.get_company_feedback_list(company_id)
+    
+    async def get_monthly_feedback_count(self, company_id: int, year: int):
+        """회사별 월별 피드백 수 조회"""
+        return await self.feedback_repository.get_monthly_feedback_count(company_id, year)
+    
+    async def get_daily_feedback_count(self, company_id: int, year: int, month: int):
+        """회사별 일별 피드백 수 조회"""
+        return await self.feedback_repository.get_daily_feedback_count(company_id, year, month)
+    
+    async def get_weekly_feedback_count(self, company_id: int, year: int, month: int):
+        """회사별 주별 피드백 수 조회"""
+        return await self.feedback_repository.get_weekly_feedback_count(company_id, year, month)
+    
+    async def get_hourly_feedback_count(self, date: str, company_id: int) -> List[dict]:
+        """특정 날짜의 시간별 피드백 수를 조회합니다."""
+        return await self.feedback_repository.get_hourly_feedback_count(date, company_id)
+
+    async def get_feedback_ratio(self, company_id: int, start_date: str, end_date: str) -> dict:
+        """특정 날짜 구간의 LIKE/UNLIKE 피드백 비율을 조회합니다."""
+        return await self.feedback_repository.get_feedback_ratio(company_id, start_date, end_date)
