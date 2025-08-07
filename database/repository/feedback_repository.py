@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 from typing import List
+from datetime import datetime
+
 
 from database.models import Feedback
 from database.models import FeedbackType
@@ -116,7 +118,6 @@ class FeedbackRepository:
     
     async def get_hourly_feedback_count(self, date: str, company_id: int) -> List[dict]:
         """특정 날짜의 시간별 피드백 수를 조회합니다."""
-        from datetime import datetime
         
         # 날짜 문자열을 date 객체로 변환
         date_obj = datetime.strptime(date, "%Y-%m-%d").date()
@@ -151,7 +152,6 @@ class FeedbackRepository:
 
     async def get_feedback_ratio(self, company_id: int, start_date: str, end_date: str) -> dict:
         """특정 날짜 구간의 LIKE/UNLIKE 피드백 비율을 조회합니다."""
-        from datetime import datetime
         
         # 날짜 문자열을 date 객체로 변환
         start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
