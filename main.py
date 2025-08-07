@@ -24,8 +24,7 @@ app.include_router(document_router)
 app.include_router(faq_router)
 app.include_router(tag_router)
 app.include_router(feedback_router)
+app.include_router(folder_router)
 
 # 채팅 예외 핸들러
 app.exception_handler(BaseApiException)(exception_handler)
-
-app.include_router(folder_router)
