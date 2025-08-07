@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     BEDROCK_EMBEDDING_MODEL_ID: str
     BEDROCK_LLM_MODEL_ID: str
 
+    #Bedrock guardrail 설정\
+    BEDROCK_GUARDRAIL_ID: str
+    BEDROCK_GUARDRAIL_VERSION: str
+
     # S3 설정
     S3_BUCKET_NAME: str
     S3_REGION_NAME: str
@@ -41,7 +45,7 @@ class Settings(BaseSettings):
     # S3_REGION_NAME: str -> S3_REGION과 중복되므로 삭제합니다.
 
     REDIS_URL: str
-    GEMINI_API_KEY: str  # .env에 있는 변수 추가
+
 
 
 settings = Settings()
