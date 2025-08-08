@@ -3,16 +3,19 @@ from database.repository.chat_repository import ChatRepository
 from database.repository.company_repository import CompanyRepository
 from api.routes.chat import chatDTO
 from cachetools import TTLCache
+from database.repository.keyword_repository import KeywordRepository
+
 
 # 채팅방별로 HIL 컨텍스트를 10분간 저장하는 캐시
 hil_context_cache = TTLCache(maxsize=1000, ttl=600)
 
 class ChatService:
-    def __init__(self, chat_repository: ChatRepository, company_repository: CompanyRepository):
+    def __init__(self, chat_repository: ChatRepository, company_repository: CompanyRepository, keyword_repository: KeywordRepository):
         
         chat_graph_manager = ChatGraph(
             chat_repository=chat_repository,
-            company_repository=company_repository
+            company_repository=company_repository,
+            keyword_repository=keyword_repository
         )
         self.app = chat_graph_manager.create_graph()
 
@@ -31,9 +34,11 @@ class ChatService:
 
         # --- 2. 일반적인 첫 질문 처리 ---
         initial_state = {
-            "user_question": message, "company_id": company_id,
-            "chat_room_id": chat_room_id, "user_id": user_id,
-            "is_re_prompt": False # 초기값 설정
+            "user_question": message,
+            "company_id": company_id,
+            "chat_room_id": chat_room_id,
+            "user_id": user_id,
+            "is_re_prompt": False
         }
         
         final_state = await self.app.ainvoke(initial_state)

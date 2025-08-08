@@ -49,8 +49,8 @@ class FeedbackReason(enum.Enum):
     OTHER = "OTHER"
 
 class ChatType(enum.Enum):
-    CHAT = "FAQ"
-    FAQ = "DOC"
+    CHAT = "DOC"
+    FAQ = "FAQ"
 
 
 # 3. 참조되는 모델들을 먼저 정의
@@ -71,6 +71,7 @@ class Company(Base, TimestampMixin):
     folders: Mapped[List["Folder"]] = relationship(back_populates="company")
     tags: Mapped[List["Tag"]] = relationship(back_populates="company")
     faqs: Mapped[List["FAQ"]] = relationship(back_populates="company")
+    keyword_logs: Mapped[List["KeywordLog"]] = relationship(back_populates="company")
 
 
 class Department(Base, TimestampMixin):
@@ -178,6 +179,7 @@ class Chat(Base, TimestampMixin):
     chat_room: Mapped["ChatRoom"] = relationship(back_populates="messages")
     author: Mapped["User"] = relationship(back_populates="messages")
     feedback: Mapped[List["Feedback"]] = relationship(back_populates="chat")
+    keyword_logs: Mapped[List["KeywordLog"]] = relationship(back_populates="chat")
 
 
 # 6. Tag 모델 추가
@@ -221,3 +223,15 @@ class Feedback(Base, TimestampMixin):
 
     # 관계(relationship)
     chat: Mapped["Chat"] = relationship(back_populates="feedback")
+
+
+class KeywordLog(Base, TimestampMixin):
+    __tablename__ = 'keyword_log'
+
+    log_id : Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    keyword : Mapped[str] = mapped_column(nullable=False, index=True)
+    company_id : Mapped[int] = mapped_column(ForeignKey('company.company_id'), nullable=False, index=True)
+    chat_id : Mapped[int] = mapped_column(ForeignKey('chat.chat_id'), nullable=False)
+
+    company: Mapped["Company"] = relationship(back_populates="keyword_logs")
+    chat: Mapped["Chat"] = relationship(back_populates="keyword_logs")

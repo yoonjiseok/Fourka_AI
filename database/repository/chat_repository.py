@@ -8,23 +8,30 @@ class ChatRepository:
         self.db = db
 
 
-    async def save_chat(self, question: str, chunk_ids: list, chat_room_id: int, user_id: int, chat_type: ChatType) -> int:
-        """
-        채팅 메시지와 관련 chunk_id들을 데이터베이스에 저장합니다.
-        """
+    async def save_chat(self, question: str, chat_type: ChatType, chat_room_id: int, user_id: int, chunk_ids: list) -> int:
+        """채팅 메시지를 안정적으로 저장하고 생성된 ID를 반환합니다."""
+        print(f"DEBUG: Saving chat for chat_room_id: {chat_room_id}")
         chat = Chat(
             question=question,
-            chunk_ids=chunk_ids,
+            chat_type=chat_type,
             chat_room_id=chat_room_id,
             user_id=user_id,
-            chat_type=chat_type
+            chunk_ids=chunk_ids
         )
-        
         self.db.add(chat)
-        await self.db.commit()
-        await self.db.refresh(chat)
-        
-        return chat.chat_id
+        try:
+
+            await self.db.flush()
+
+            await self.db.commit()
+
+            await self.db.refresh(chat)
+            print(f"DEBUG: Chat saved successfully. Returning chat_id: {chat.chat_id}")
+            return chat.chat_id
+        except Exception as e:
+            print(f"ERROR: Failed to save chat. Rolling back. Error: {e}")
+            await self.db.rollback()
+            raise  
 
     async def find_similar_chunks(self, embedding: list, company_id: int, top_k: int = 5) -> list:
         """
@@ -32,7 +39,6 @@ class ChatRepository:
         """
         try:
             embedding_str = str(embedding)
-            
             query = text("""
             SELECT
                 c.doc_id,

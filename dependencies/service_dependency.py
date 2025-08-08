@@ -20,6 +20,7 @@ from service.redis.redis_service import RedisService
 from utils.db import get_db 
 
 from service.feedback.feedback_service import FeedbackService
+from database.repository.keyword_repository import KeywordRepository
 
 
 def get_document_service(repo: DocumentRepository = Depends(get_document_repository),redis: RedisService = Depends(get_redis_service)) -> DocumentService:
@@ -50,3 +51,14 @@ def get_feedback_service(
 
 def get_folder_service(repo: FolderRepository = Depends(get_folder_repository)) -> FolderService:
     return FolderService(repo)
+
+def get_chat_service(db: AsyncSession = Depends(get_db)):
+    chat_repo = ChatRepository(db)
+    company_repo = CompanyRepository(db)
+    keyword_repo = KeywordRepository(db) 
+    
+    return ChatService(
+        chat_repository=chat_repo,
+        company_repository=company_repo,
+        keyword_repository=keyword_repo
+    )

@@ -75,3 +75,4 @@ awscli
 # Redis 관련 패키지 추가
 redis>=5.0.0
 diff-match-patch>=1.0.5
+langgraph
