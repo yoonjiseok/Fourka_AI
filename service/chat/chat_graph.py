@@ -240,9 +240,10 @@ class ChatGraph:
 
         # [로직 수정] FAQ에서 답변을 찾았으면 FAQ 타입, 아니면 일반 CHAT 타입으로 지정
         if state.get("is_faq_found", False):
-            chat_type = ChatType.FAQ
-        else:
             chat_type = ChatType.DOC
+        else:
+            chat_type = ChatType.FAQ
+        
 
         chunk_ids = []
         # FAQ 답변이 아닐 경우(RAG를 거친 경우)에만 chunk_id를 저장

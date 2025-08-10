@@ -57,3 +57,12 @@ class FeedbackService:
     async def get_feedback_ratio(self, company_id: int, start_date: str, end_date: str) -> dict:
         """특정 날짜 구간의 LIKE/UNLIKE 피드백 비율을 조회합니다."""
         return await self.feedback_repository.get_feedback_ratio(company_id, start_date, end_date)
+    
+    async def delete_feedback(self, feedback_id: int):
+        """피드백 삭제"""
+        deleted = await self.feedback_repository.delete_feedback(feedback_id)
+        
+        if not deleted:
+            raise ValueError(f"피드백 ID {feedback_id}를 찾을 수 없습니다.")
+        
+        return deleted
