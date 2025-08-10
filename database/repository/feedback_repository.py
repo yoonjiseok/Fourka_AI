@@ -19,12 +19,24 @@ class FeedbackRepository:
     
     # 회사별 unlike 피드백 조회 (View 사용)
     async def get_company_unlike_feedback_list(self, company_id: int):
-        result = await self.db.execute( 
+        """
+        회사별 unlike 피드백 목록을 조회합니다.
+        chat 테이블과 LEFT JOIN 하여 chat_type이 'FAQ'인 경우 faq_id를 함께 반환합니다.
+        """
+        result = await self.db.execute(
             text("""
-                SELECT * FROM company_feedback 
-                WHERE company_id = :company_id 
-                AND feedback_type = 'UNLIKE'
-                ORDER BY created_at DESC
+                SELECT 
+                    cf.*, 
+                    c.faq_id
+                FROM 
+                    company_feedback cf
+                LEFT JOIN 
+                    chat c ON cf.chat_id = c.chat_id
+                WHERE 
+                    cf.company_id = :company_id 
+                    AND cf.feedback_type = 'UNLIKE'
+                ORDER BY 
+                    cf.created_at DESC
             """),
             {"company_id": company_id}
         )
