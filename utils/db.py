@@ -1,4 +1,5 @@
 import redis
+import redis.asyncio as async_redis
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from typing import AsyncGenerator
 from config import settings  # 설정 파일
@@ -22,7 +23,14 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 
+# 동기 Redis 클라이언트 (기존 서비스용)
 redis_client = redis.from_url(
+    f"{settings.REDIS_URL}",
+    decode_responses=True
+)
+
+# 비동기 Redis 클라이언트 (알림 스트림용)
+async_redis_client = async_redis.from_url(
     f"{settings.REDIS_URL}",
     decode_responses=True
 )
