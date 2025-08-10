@@ -245,7 +245,7 @@ class ChatGraph:
         print("--- 신규 노드: 채팅 내용 저장 ---")
 
         if state.get("is_faq_found", False):
-            chat_type = ChatType.CHAT
+            chat_type = ChatType.DOC
         else:
             chat_type = ChatType.FAQ
 
