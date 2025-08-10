@@ -275,9 +275,21 @@ class FeedbackRepository:
                 "unlike_ratio": unlike_ratio
             }
         
-    async def delete_feedback(self, feedback_id: int):
-        """피드백 삭제"""
+    async def delete_feedback(self, feedback_id: int) -> bool:
+        """피드백 삭제 - 삭제 성공 여부를 반환합니다."""
         async with self.db as session:
-            query = text("DELETE FROM feedback WHERE feedback_id = :feedback_id")
-            await session.execute(query, {"feedback_id": feedback_id})
+            # 삭제하기 전에 존재하는지 확인
+            check_query = text("SELECT feedback_id FROM feedback WHERE feedback_id = :feedback_id")
+            check_result = await session.execute(check_query, {"feedback_id": feedback_id})
+            existing_feedback = check_result.fetchone()
+            
+            if not existing_feedback:
+                return False  # 존재하지 않음
+            
+            # 존재하면 삭제 실행
+            delete_query = text("DELETE FROM feedback WHERE feedback_id = :feedback_id")
+            result = await session.execute(delete_query, {"feedback_id": feedback_id})
             await session.commit()
+            
+            # 실제로 삭제된 행의 수를 확인 (안전장치)
+            return result.rowcount > 0

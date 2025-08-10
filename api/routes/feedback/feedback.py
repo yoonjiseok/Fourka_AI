@@ -176,7 +176,7 @@ async def get_feedback_reasons():
     ]
     return feedback_reasons
 
-@feedback_router.delete("/delete", response_model=SuccessResponse)
+@feedback_router.delete("/delete/{feedback_id}", response_model=SuccessResponse)
 async def delete_feedback(
     feedback_id: int,
     feedback_service: FeedbackService = Depends(get_feedback_service)
@@ -189,5 +189,9 @@ async def delete_feedback(
             message="피드백이 성공적으로 삭제되었습니다.",
             code=200
         )
+    except ValueError as e:
+        # 존재하지 않는 피드백 ID
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
+        # 기타 서버 오류
         raise HTTPException(status_code=500, detail=f"피드백 삭제 중 오류가 발생했습니다: {str(e)}")
