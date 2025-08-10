@@ -1,9 +1,11 @@
 import asyncio
+from datetime import datetime
 from database.repository.feedback_repository import FeedbackRepository
 from database.repository.chunk_repository import ChunkRepository
 from database.repository.chat_repository import ChatRepository
 from database.models import Feedback
 from database.models import FeedbackType
+from utils.db import async_redis_client
 from typing import List
 
 class FeedbackService:
@@ -16,26 +18,68 @@ class FeedbackService:
         """
         피드백 타입(좋아요, 싫어요)에 따른 처리를 수행합니다.
         """
-        # 피드백 타입에 따른 처리
-        if feedback.feedback_type == FeedbackType.LIKE:
-            created_feedback = await self.feedback_repository.create_feedback(feedback)
-            # 피드백에 있는 chat_id의 모든 chunk_id를 추출
-            chunk_ids = await self.chat_repository.get_chunk_ids_by_chat_id(feedback.chat_id)
-            # 해당 chat_id에 있는 chunk_id들의 가중치를 1.1배 증가
-            await self.chunk_repository.update_chunk_weights(chunk_ids)
-    
-        elif feedback.feedback_type == FeedbackType.UNLIKE:
-            # 싫어요 피드백을 데이터베이스에 저장
-            created_feedback = await self.feedback_repository.create_feedback(feedback)
+        created_feedback = None
+        
+        try:
+            # 피드백 타입에 따른 처리
+            if feedback.feedback_type == FeedbackType.LIKE:
+                created_feedback = await self.feedback_repository.create_feedback(feedback)
+                # 피드백에 있는 chat_id의 모든 chunk_id를 추출
+                chunk_ids = await self.chat_repository.get_chunk_ids_by_chat_id(feedback.chat_id)
+                # 해당 chat_id에 있는 chunk_id들의 가중치를 1.1배 증가
+                await self.chunk_repository.update_chunk_weights(chunk_ids)
+        
+            elif feedback.feedback_type == FeedbackType.UNLIKE:
+                # 싫어요 피드백을 데이터베이스에 저장
+                created_feedback = await self.feedback_repository.create_feedback(feedback)
             
-        return created_feedback
+            # 모든 비즈니스 로직이 성공적으로 완료된 후에만 알림 발행
+            if created_feedback:
+                try:
+                    await self._publish_feedback_notification(created_feedback)
+                except Exception as notification_error:
+                    print(f"알림 발행 실패 (피드백 생성은 성공): {notification_error}")
+                
+            return created_feedback
+            
+        except Exception as e:
+            # 핵심 비즈니스 로직 오류 발생 시 (DB 저장, chunk 가중치 업데이트 등)
+            print(f"피드백 생성 중 오류 발생: {e}")
+            raise  # 상위로 예외 전파하여 롤백 처리
+    
+    async def _publish_feedback_notification(self, feedback: Feedback):
+        """피드백 생성 시 Redis Stream으로 알림을 발행합니다."""
+        try:
+            # user_id만 효율적으로 조회
+            user_id = await self.chat_repository.get_user_id_by_chat_id(feedback.chat_id)
+            if not user_id:
+                print(f"Chat ID {feedback.chat_id}를 찾을 수 없습니다.")
+                return
+            
+            # Redis Stream에 알림 전송
+            await async_redis_client.xadd(
+                "notification-stream",
+                {
+                    "senderId": str(user_id),
+                    "receiverId": "",  # 리시버는 현재 기능에서 없으므로 빈 값
+                    "type": feedback.feedback_type.value,
+                    "department": "",  # 부서 정보가 없으므로 빈 값
+                    "description": feedback.feedback_content or "",
+                    "createdAt": datetime.utcnow().isoformat()
+                }
+            )
+            print(f"[Redis Stream] 피드백 알림 발행 완료: feedback_id={feedback.feedback_id}")
+            
+        except Exception as e:
+            print(f"[Redis Stream] 알림 발행 중 오류 발생: {e}")
+            # 알림 발행 실패해도 피드백 생성은 성공으로 처리
     
     async def get_company_unlike_feedback_list(self, company_id: int):
-        """회사별 unlike 피드백 목록 조회 (View 사용)"""
+        """회사별 unlike 피드백 목록 조회"""
         return await self.feedback_repository.get_company_unlike_feedback_list(company_id)
     
     async def get_company_feedback_list(self, company_id: int):
-        """회사별 모든 피드백 목록 조회 (View 사용)"""
+        """회사별 모든 피드백 목록 조회"""
         return await self.feedback_repository.get_company_feedback_list(company_id)
     
     async def get_monthly_feedback_count(self, company_id: int, year: int):

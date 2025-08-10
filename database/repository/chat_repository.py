@@ -91,3 +91,15 @@ class ChatRepository:
         result = await self.db.execute(query, {"chat_id": chat_id})
         return result.fetchone()[0]
 
+    async def get_user_id_by_chat_id(self, chat_id: int) -> int | None:
+        """
+        주어진 chat_id에 해당하는 user_id만 조회합니다. (알림 발행용 최적화)
+        """
+        query = text("""
+            SELECT user_id FROM chat WHERE chat_id = :chat_id
+        """)
+        result = await self.db.execute(query, {"chat_id": chat_id})
+        row = result.fetchone()
+        
+        return row[0] if row else None
+
