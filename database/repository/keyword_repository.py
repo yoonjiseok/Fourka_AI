@@ -25,7 +25,7 @@ class KeywordRepository:
         print(f"DEBUG: 키워드 {keywords}를 DB에 저장했습니다.")
 
     async def get_top_keywords_by_period(
-        self, company_id: int, start_date: date, end_date: date, limit: int = 5
+        self, company_id: int, start_date: date, end_date: date, limit: int = 10
     ) -> list[dict]:
         """
         주어진 기간과 회사 ID에 대해 가장 많이 등장한 키워드 Top N을 조회합니다.
