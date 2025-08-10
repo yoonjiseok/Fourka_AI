@@ -60,4 +60,9 @@ class FeedbackService:
     
     async def delete_feedback(self, feedback_id: int):
         """피드백 삭제"""
-        return await self.feedback_repository.delete_feedback(feedback_id)
+        deleted = await self.feedback_repository.delete_feedback(feedback_id)
+        
+        if not deleted:
+            raise ValueError(f"피드백 ID {feedback_id}를 찾을 수 없습니다.")
+        
+        return deleted
