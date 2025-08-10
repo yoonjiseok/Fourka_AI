@@ -5,6 +5,7 @@ from typing import List
 from database.models import KeywordLog
 from sqlalchemy import text
 from datetime import date
+from datetime import timedelta
 
 class KeywordRepository:
     def __init__(self, db: AsyncSession):
@@ -30,7 +31,7 @@ class KeywordRepository:
         주어진 기간과 회사 ID에 대해 가장 많이 등장한 키워드 Top N을 조회합니다.
         """
   
-        from datetime import timedelta
+        
         end_date_exclusive = end_date + timedelta(days=1)
 
         query = text(
@@ -62,5 +63,5 @@ class KeywordRepository:
             },
         )
         
-        return [row._asdict() for row in result.mappings()]
+        return [dict(row) for row in result.mappings()]
 

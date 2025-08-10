@@ -238,7 +238,7 @@ class ChatGraph:
         """[수정된 노드] 최종 답변을 Chat 테이블에 저장하고 chat_id를 얻습니다."""
         print("--- 채팅 내용 저장 ---")
 
-        # [로직 수정] FAQ에서 답변을 찾았으면 FAQ 타입, 아니면 일반 CHAT 타입으로 지정
+        # [로직 수정] FAQ에서 답변을 찾았으면 FAQ 타입, 아니면 일반 DOC 타입으로 지정
         if state.get("is_faq_found", False):
             chat_type = ChatType.DOC
         else:
