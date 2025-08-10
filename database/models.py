@@ -49,7 +49,7 @@ class FeedbackReason(enum.Enum):
     OTHER = "OTHER"
 
 class ChatType(enum.Enum):
-    CHAT = "DOC"
+    DOC = "DOC"
     FAQ = "FAQ"
 
 
@@ -169,7 +169,7 @@ class Chat(Base, TimestampMixin):
     __tablename__ = "chat"
     
     chat_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    chat_type: Mapped[ChatType] = mapped_column(Enum(ChatType), nullable=False, default=ChatType.CHAT)
+    chat_type: Mapped[ChatType] = mapped_column(Enum(ChatType), nullable=False, default=ChatType.DOC)
     question: Mapped[str] = mapped_column(nullable=False)
     chat_room_id: Mapped[int] = mapped_column(ForeignKey("chat_room.chat_room_id"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"), nullable=False)
