@@ -33,21 +33,3 @@ async def chatting(
         message="Chatting successful",
         code=200
     )
-
-@chat_router.post("small-talk", response_model=SuccessResponse)
-async def smalltalk(
-        request: chatDTO.SmallTalkRequest,
-        current_user: dict = Depends(get_current_user),
-        chat_service: ChatService = Depends(get_chat_service)
-):
-    response = await chat_service.send_small_chat(
-        message=request.message,
-    )
-
-    return SuccessResponse(
-        result={
-            "response": response
-        },
-        message="Small talk successful",
-        code=200
-    )
