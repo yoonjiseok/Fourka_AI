@@ -34,7 +34,7 @@ async def chatting(
         code=200
     )
 
-@chat_router.post("smalltalk", response_model=SuccessResponse)
+@chat_router.post("small-talk", response_model=SuccessResponse)
 async def smalltalk(
         request: chatDTO.SmallTalkRequest,
         current_user: dict = Depends(get_current_user),
