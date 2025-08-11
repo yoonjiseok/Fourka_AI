@@ -6,7 +6,6 @@ from pydantic import BaseModel
 class FAQCreateDTO(BaseModel):
     question: str
     answer: str
-    company_id: int
     tag_id: int
 
 

@@ -22,7 +22,7 @@ async def upload_faq(
         faq = await faq_service.create_faq(
             question=faq_dto.question,
             answer=faq_dto.answer,
-            company_id=faq_dto.company_id,
+            company_id=current_user.get("company_id"),
             tag_id=faq_dto.tag_id
         )
         
@@ -30,6 +30,7 @@ async def upload_faq(
             success=True,
             result={
                 "faq_id": faq.faq_id,
+                "company_id": faq.company_id,
                 "question": faq.question,
                 "answer": faq.answer,
                 "tag_id": faq.tag_id,

@@ -82,7 +82,7 @@ class FAQService:
             return False
             
         try:
-            await self.db_session.delete(db_faq)
+            self.db_session.delete(db_faq)
             
             chroma_faq_service.delete_faq(faq_id=faq_id)
             

@@ -21,7 +21,8 @@ async def chatting(
         message=request.message,
         company_id=request.company_id,
         chat_room_id=request.chat_room_id, 
-        user_id=current_user.get("user_id")  
+        # user_id=current_user.get("user_id")  
+        user_id = 4
     )
 
     return SuccessResponse(
