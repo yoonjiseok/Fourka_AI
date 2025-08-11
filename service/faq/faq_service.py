@@ -79,22 +79,40 @@ class FAQService:
         return db_faq
 
     async def delete_faq(self, faq_id: int) -> bool:
+        print(f"FAQ 삭제 시작: {faq_id}")
+        
+        # 삭제 전 FAQ 존재 확인
         result = await self.db_session.execute(select(FAQ).where(FAQ.faq_id == faq_id))
         db_faq = result.scalars().first()
 
         if not db_faq:
+            print(f"FAQ {faq_id}를 찾을 수 없습니다.")
             return False
             
+        print(f"FAQ 찾음: {db_faq.faq_id}, 질문: {db_faq.question[:50]}")
+            
         try:
-            self.db_session.delete(db_faq)
+            # DB에서 삭제
+            await self.db_session.delete(db_faq)
+            await self.db_session.flush()
             
+            # 삭제 후 확인
+            check_result = await self.db_session.execute(select(FAQ).where(FAQ.faq_id == faq_id))
+            check_faq = check_result.scalars().first()
+            print(f"삭제 후 확인: {check_faq is None}")
+            
+            # ChromaDB에서 삭제
             chroma_faq_service.delete_faq(faq_id=faq_id)
-            
+        
+            # 커밋
             await self.db_session.commit()
             
         except Exception as e:
+            print(f"FAQ 삭제 중 오류 발생: {e}")
+            import traceback
+            traceback.print_exc()
             await self.db_session.rollback()
-            raise FaqException(message="FAQ deletion failed. Please try again later.")
+            raise FaqException(message=f"FAQ deletion failed: {str(e)}")
             
         return True
 
