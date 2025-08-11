@@ -29,8 +29,10 @@ redis_client = redis.from_url(
     decode_responses=True
 )
 
-# 비동기 Redis 클라이언트 (알림 스트림용)
-async_redis_client = async_redis.from_url(
-    f"{settings.REDIS_URL}",
-    decode_responses=True
+# 비동기 Redis 클라이언트 (스트림용 - 별도 클러스터)
+async_redis_client = async_redis.Redis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    decode_responses=True,
+    encoding="utf-8"
 )
