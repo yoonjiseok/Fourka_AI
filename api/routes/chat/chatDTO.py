@@ -3,7 +3,6 @@ from typing import List, Optional
 
 class ChatRequest(BaseModel):
     message: str
-    chat_room_id: int
     
 class ChatResponse(BaseModel):
     answer: str
