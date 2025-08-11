@@ -15,12 +15,12 @@ metadata:
 data:
 
   # .env 파일 내용
-  DB_URL: "postgresql+asyncpg://user:1234@pgvector-service.database:5432/ai_fastapi_db"
+  DB_URL: "postgresql+asyncpg://vectoruser:pgvectorpassword@pgvector-service.database:5432/ai_fastapi_db"
   FOURKA_DB_HOST: "pgvector-service.database"
   FOURKA_DB_PORT: "5432"
   FOURKA_DB_NAME: "ai_fastapi_db"
-  FOURKA_DB_USER: "user"
-  FOURKA_DB_PASSWORD: "1234"
+  FOURKA_DB_USER: "vectoruser"
+  FOURKA_DB_PASSWORD: "pgvectorpassword"
 
   # API Key 및 시크릿
   JWT_SECRET: "Zm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNo"
@@ -71,7 +71,7 @@ spec:
     spec:
       containers:
         - name: ai-container
-          image: msj9965/fourkachip-ai:0.0.4
+          image: msj9965/fourkachip-ai:0.0.9
           ports:
             - containerPort: 8000 # 애플리케이션이 사용하는 포트
           envFrom:

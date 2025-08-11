@@ -173,7 +173,8 @@ class Chat(Base, TimestampMixin):
     question: Mapped[str] = mapped_column(nullable=False)
     chat_room_id: Mapped[int] = mapped_column(ForeignKey("chat_room.chat_room_id"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"), nullable=False)
-    chunk_ids: Mapped[List] = mapped_column(JSONB, nullable=False, server_default="'[]'::jsonb")
+    chunk_ids: Mapped[List] = mapped_column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+
     
     # 관계(relationship)    
     chat_room: Mapped["ChatRoom"] = relationship(back_populates="messages")
