@@ -13,3 +13,6 @@ class ChatResponse(BaseModel):
 class HILResponse(BaseModel):
     answer: str
     metadata: Optional[List[dict]]
+
+class SmallTalkRequest(BaseModel):
+    message: str

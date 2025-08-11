@@ -1,10 +1,14 @@
-from .chat_graph import ChatGraph # 위에서 만든 클래스 import
+import json
+
+import boto3
+from cachetools import TTLCache
+
+from api.routes.chat import chatDTO
+from config import settings
 from database.repository.chat_repository import ChatRepository
 from database.repository.company_repository import CompanyRepository
-from api.routes.chat import chatDTO
-from cachetools import TTLCache
 from database.repository.keyword_repository import KeywordRepository
-
+from .chat_graph import ChatGraph  # 위에서 만든 클래스 import
 
 # 채팅방별로 HIL 컨텍스트를 10분간 저장하는 캐시
 hil_context_cache = TTLCache(maxsize=1000, ttl=600)
@@ -80,3 +84,49 @@ class ChatService:
             answer=response_dict['final_answer'],
             metadata=response_dict['final_metadata']
         )
+
+    async def send_small_chat(self, message: str):
+        """소소한 대화 처리"""
+        bedrock_runtime = boto3.client(
+            "bedrock-runtime",
+            region_name=settings.BEDROCK_REGION_NAME,
+            aws_access_key_id=settings.BEDROCK_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.BEDROCK_SECRET_ACCESS_KEY,
+        )
+
+        # 1. 모델이 요구하는 JSON 형식으로 본문(body) 구성
+        # Claude 3 모델의 경우 "messages" 형식을 사용합니다.
+        body_data = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [{"type": "text", "text": message}]
+                }
+            ],
+            "max_tokens": 512
+        }
+
+        # 2. JSON을 문자열로 변환하고 바이트로 인코딩
+        body = json.dumps(body_data).encode('utf-8')
+
+        try:
+            response = bedrock_runtime.invoke_model(
+                modelId=settings.BEDROCK_LLM_MODEL_ID,
+                body=body,
+                contentType="application/json",
+                accept="application/json"
+            )
+
+            # 3. 응답 본문(body) 읽기 및 파싱
+            # StreamingBody 객체를 읽고 JSON으로 디코딩합니다.
+            response_body = json.loads(response['body'].read())
+
+            # 4. 응답 텍스트 추출 (Claude 3 모델 기준)
+            completion_text = response_body['content'][0]['text']
+
+            return completion_text
+
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            return None
