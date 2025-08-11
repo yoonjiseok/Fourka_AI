@@ -49,7 +49,7 @@ class FeedbackRepository:
     async def get_company_feedback_list(self, company_id: int):
         result = await self.db.execute(
             text("""
-                SELECT * FROM    
+                SELECT * FROM company_feedback
                 WHERE company_id = :company_id 
                 ORDER BY created_at DESC
             """),
