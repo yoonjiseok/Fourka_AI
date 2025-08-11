@@ -174,12 +174,16 @@ class Chat(Base, TimestampMixin):
     chat_room_id: Mapped[int] = mapped_column(ForeignKey("chat_room.chat_room_id"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.user_id"), nullable=False)
     chunk_ids: Mapped[List] = mapped_column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    faq_id: Mapped[int] = mapped_column(ForeignKey("faq.faq_id"), nullable=True)
     
     # 관계(relationship)    
     chat_room: Mapped["ChatRoom"] = relationship(back_populates="messages")
     author: Mapped["User"] = relationship(back_populates="messages")
     feedback: Mapped[List["Feedback"]] = relationship(back_populates="chat")
     keyword_logs: Mapped[List["KeywordLog"]] = relationship(back_populates="chat")
+    faq: Mapped["FAQ"] = relationship(back_populates="chats", foreign_keys=[faq_id])
+
+
 
 
 # 6. Tag 모델 추가
@@ -208,6 +212,8 @@ class FAQ(Base, TimestampMixin):
     # 관계(relationship)
     company: Mapped["Company"] = relationship(back_populates="faqs")
     tag: Mapped["Tag"] = relationship(back_populates="faqs")
+    chats: Mapped[List["Chat"]] = relationship(back_populates="faq")
+
 
 
 # 8. Feedback 모델 추가

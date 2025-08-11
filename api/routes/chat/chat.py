@@ -15,13 +15,14 @@ security_scheme = HTTPBearer()
 async def chatting(
         request: chatDTO.ChatRequest,
         current_user: dict = Depends(get_current_user),
-        chat_service: ChatService = Depends(get_chat_service)
+        chat_service: ChatService = Depends(get_chat_service),
+        current_company_id : dict = Depends(get_current_user)
 ):
     response = await chat_service.send_chat(
         message=request.message,
-        company_id=request.company_id,
         chat_room_id=request.chat_room_id, 
-        user_id=current_user.get("user_id")  
+        user_id=current_user.get("user_id"),
+        company_id = current_company_id.get("company_id")
     )
 
     return SuccessResponse(
@@ -29,6 +30,7 @@ async def chatting(
             "request_content": request.message,
             "response_content": response.answer,
             "meta_result": response.metadata,
+            "chat_id" : response.chat_id
         },
         message="Chatting successful",
         code=200

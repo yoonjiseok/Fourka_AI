@@ -52,7 +52,8 @@ class ChatService:
 
         return chatDTO.ChatResponse(
             answer=final_state['final_answer'],
-            metadata=final_state['final_metadata']
+            metadata=final_state['final_metadata'],
+            chat_id=final_state.get('chat_id')
         )
 
     async def _generate_answer_from_context(self, user_choice: str, context: list[dict]):
