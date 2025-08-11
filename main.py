@@ -9,6 +9,8 @@ from api.routes.folder.folder import folder_router
 from api.routes.health.health import health_router
 from exception.exception_handler import exception_handler
 from exception.models.exception import BaseApiException
+from utils.db import async_engine
+from database.models import Base
 
 app = FastAPI(
     title="CHATBOT",
@@ -28,3 +30,10 @@ app.include_router(folder_router)
 
 # 채팅 예외 핸들러
 app.exception_handler(BaseApiException)(exception_handler)
+
+@app.on_event("startup")
+async def init_db() -> None:
+    """서버 기동 시, 존재하지 않는 테이블을 models 기준으로 생성합니다."""
+    async with async_engine.begin() as conn:
+    
+        await conn.run_sync(Base.metadata.create_all)

@@ -8,7 +8,7 @@ class ChatRepository:
         self.db = db
 
 
-    async def save_chat(self, question: str, chat_type: ChatType, chat_room_id: int, user_id: int, chunk_ids: list) -> int:
+    async def save_chat(self, question: str, chat_type: ChatType, chat_room_id: int, user_id: int, chunk_ids: list, faq_id : int = None) -> int:
         """채팅 메시지를 안정적으로 저장하고 생성된 ID를 반환합니다."""
         print(f"DEBUG: Saving chat for chat_room_id: {chat_room_id}")
         chat = Chat(
@@ -16,7 +16,8 @@ class ChatRepository:
             chat_type=chat_type,
             chat_room_id=chat_room_id,
             user_id=user_id,
-            chunk_ids=chunk_ids
+            chunk_ids=chunk_ids,
+            faq_id = faq_id
         )
         self.db.add(chat)
         try:
