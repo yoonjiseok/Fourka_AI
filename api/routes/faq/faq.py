@@ -125,3 +125,4 @@ async def get_faqs_by_company(
         raise HTTPException(status_code=401, detail="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"FAQ 조회 중 오류가 발생했습니다: {str(e)}")
+    

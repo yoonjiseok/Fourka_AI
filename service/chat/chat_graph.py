@@ -105,7 +105,8 @@ class ChatGraph:
             distance = faq_results['distances'][0][0]
             if distance < FAQ_SIMILARITY_THRESHOLD:
                 metadata = faq_results['metadatas'][0][0]
-                faq_id = metadata.get('original_faq_id', metadata.get('faq_id', 'unknown'))
+                # 'unknown' 대신 None을 사용하도록 수정합니다.
+                faq_id = metadata.get('original_faq_id', metadata.get('faq_id', None))
                 return {
                     "final_answer": metadata['answer'],
                     "final_metadata": [{
@@ -153,7 +154,6 @@ class ChatGraph:
             "is_faq_found": False,
             "keywords": keywords
         }
-
 
     # rag_retrieve_node 정의
     async def rag_retrieve_node(self, state: GraphState) -> dict:
@@ -240,22 +240,26 @@ class ChatGraph:
 
         # [로직 수정] FAQ에서 답변을 찾았으면 FAQ 타입, 아니면 일반 DOC 타입으로 지정
         if state.get("is_faq_found", False):
-            chat_type = ChatType.DOC
-        else:
             chat_type = ChatType.FAQ
+        else:
+            chat_type = ChatType.DOC
         
-
+        faq_id = None
         chunk_ids = []
         # FAQ 답변이 아닐 경우(RAG를 거친 경우)에만 chunk_id를 저장
         if not state.get("is_faq_found", False):
              chunk_ids=[item.get("chunk_id") for item in state.get("final_metadata", []) if item.get("source") == "Document"]
+        else:
+            if state.get("final_metadata"):
+                faq_id = state["final_metadata"][0].get("faq_id")
 
         new_chat_id = await self.chat_repository.save_chat(
             question=state["user_question"],
             chat_type=chat_type,
             chat_room_id=state["chat_room_id"],
             user_id=state["user_id"],
-            chunk_ids=chunk_ids
+            chunk_ids=chunk_ids,
+            faq_id=faq_id
         )
         print(f"DEBUG (save_chat_node): DB에서 반환된 new_chat_id: {new_chat_id}")
         
