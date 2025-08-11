@@ -3,7 +3,6 @@ from typing import List, Optional
 
 class ChatRequest(BaseModel):
     message: str
-    chat_room_id: int
     
 class ChatResponse(BaseModel):
     answer: str
@@ -13,3 +12,6 @@ class ChatResponse(BaseModel):
 class HILResponse(BaseModel):
     answer: str
     metadata: Optional[List[dict]]
+
+class SmallTalkRequest(BaseModel):
+    message: str
