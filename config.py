@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     # S3_REGION_NAME: str -> S3_REGION과 중복되므로 삭제합니다.
 
     REDIS_URL: str
+    
+    # Redis 스트림용 개별 설정
+    REDIS_HOST: str
+    REDIS_PORT: int
 
 
 
