@@ -24,8 +24,12 @@ class ChatService:
         self.app = chat_graph_manager.create_graph()
 
     async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int):
-        
-        # --- 1. 재질문에 대한 답변인지 확인 ---
+        if message.startswith("스몰톡"):
+            return chatDTO.ChatResponse(
+                answer= await self.send_small_chat(message.replace("스몰톡", "")),
+                metadata=[]
+            )
+                    # --- 1. 재질문에 대한 답변인지 확인 ---
         cached_context = hil_context_cache.get(chat_room_id)
         
         if cached_context:
