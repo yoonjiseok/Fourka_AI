@@ -1,13 +1,17 @@
+from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBearer
 from fastapi.encoders import jsonable_encoder
 from typing import List
-
-from api.routes.feedback.feedbackDTO import FeedbackCreateDTO
+from database.repository.keyword_repository import KeywordRepository
+from service.chat.keyword_service import KeywordService
+from api.routes.feedback.feedbackDTO import FeedbackCreateDTO, TopKeywordDTO
 from dependencies.service_dependency import get_feedback_service
 from model.response_models import SuccessResponse
 from service.feedback.feedback_service import FeedbackService
 from database.models import Feedback
+from sqlalchemy.ext.asyncio import AsyncSession
+from utils.db import get_db
 
 feedback_router = APIRouter(prefix="/api/ai/feedbacks", tags=["feedback"])
 security_scheme = HTTPBearer()
@@ -64,13 +68,13 @@ async def get_monthly_feedback_count(
     year: int,
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
-    """회사별 월별 싫어요 피드백 수 조회"""
+    """회사별 월별 LIKE/UNLIKE 피드백 수 조회"""
     try:
         monthly_feedback_count = await feedback_service.get_monthly_feedback_count(company_id, year)
         return SuccessResponse(
             success=True,
             result=jsonable_encoder(monthly_feedback_count),
-            message="월별 싫어요 피드백 수가 성공적으로 조회되었습니다.",
+            message="월별 피드백 수가 성공적으로 조회되었습니다.",
             code=200
         )
     except Exception as e:
@@ -83,13 +87,13 @@ async def get_daily_feedback_count(
     month: int,
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
-    """회사별 일별 싫어요 피드백 수 조회"""
+    """회사별 일별 LIKE/UNLIKE 피드백 수 조회"""
     try:
         daily_feedback_count = await feedback_service.get_daily_feedback_count(company_id, year, month)
         return SuccessResponse(
             success=True,
             result=jsonable_encoder(daily_feedback_count),
-            message="일별 싫어요 피드백 수가 성공적으로 조회되었습니다.",
+            message="일별 피드백 수가 성공적으로 조회되었습니다.",
             code=200
         )
     except Exception as e:
@@ -102,13 +106,13 @@ async def get_weekly_feedback_count(
     month: int,
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
-    """회사별 주별 싫어요 피드백 수 조회"""
+    """회사별 주별 LIKE/UNLIKE 피드백 수 조회"""
     try:
         weekly_feedback_count = await feedback_service.get_weekly_feedback_count(company_id, year, month)
         return SuccessResponse(
             success=True,
             result=jsonable_encoder(weekly_feedback_count),
-            message="주별 싫어요 피드백 수가 성공적으로 조회되었습니다.",
+            message="주별 피드백 수가 성공적으로 조회되었습니다.",
             code=200
         )
     except Exception as e:
@@ -120,7 +124,7 @@ async def get_hourly_feedback_count(
     company_id: int = Query(..., description="회사 ID"),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
-    """특정 날짜의 시간별 피드백 수를 조회합니다."""
+    """특정 날짜의 시간별 LIKE/UNLIKE 피드백 수를 조회합니다."""
     try:
         # 날짜 형식 검증
         from datetime import datetime
@@ -175,3 +179,41 @@ async def get_feedback_reasons():
         {"value": "OTHER", "label": "기타"}
     ]
     return feedback_reasons
+
+@feedback_router.delete("/delete/{feedback_id}", response_model=SuccessResponse)
+async def delete_feedback(
+    feedback_id: int,
+    feedback_service: FeedbackService = Depends(get_feedback_service)
+):
+    """피드백 삭제"""
+    try:
+        await feedback_service.delete_feedback(feedback_id)
+        return SuccessResponse(
+            success=True, 
+            message="피드백이 성공적으로 삭제되었습니다.",
+            code=200
+        )
+    except ValueError as e:
+        # 존재하지 않는 피드백 ID
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        # 기타 서버 오류
+        raise HTTPException(status_code=500, detail=f"피드백 삭제 중 오류가 발생했습니다: {str(e)}")
+    
+@feedback_router.get("/top", response_model=List[TopKeywordDTO])
+async def get_top_keywords(
+    company_id: int,
+    start_date: date = Query(..., description="조회 시작 날짜 (YYYY-MM-DD)"),
+    end_date: date = Query(..., description="조회 종료 날짜 (YYYY-MM-DD)"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    선택된 기간 내에 가장 많이 호출된 Top 5 키워드와 각 키워드의 호출 수를 반환합니다.
+    """
+    keyword_repo = KeywordRepository(db)
+    keyword_service = KeywordService(keyword_repo)
+    
+    top_keywords = await keyword_service.get_top_keywords(
+        company_id=company_id, start_date=start_date, end_date=end_date
+    )
+    return top_keywords

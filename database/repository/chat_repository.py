@@ -8,7 +8,7 @@ class ChatRepository:
         self.db = db
 
 
-    async def save_chat(self, question: str, chat_type: ChatType, chat_room_id: int, user_id: int, chunk_ids: list) -> int:
+    async def save_chat(self, question: str, chat_type: ChatType, chat_room_id: int, user_id: int, chunk_ids: list, faq_id : int = None) -> int:
         """채팅 메시지를 안정적으로 저장하고 생성된 ID를 반환합니다."""
         print(f"DEBUG: Saving chat for chat_room_id: {chat_room_id}")
         chat = Chat(
@@ -16,7 +16,8 @@ class ChatRepository:
             chat_type=chat_type,
             chat_room_id=chat_room_id,
             user_id=user_id,
-            chunk_ids=chunk_ids
+            chunk_ids=chunk_ids,
+            faq_id = faq_id
         )
         self.db.add(chat)
         try:
@@ -90,4 +91,16 @@ class ChatRepository:
         """)
         result = await self.db.execute(query, {"chat_id": chat_id})
         return result.fetchone()[0]
+
+    async def get_user_id_by_chat_id(self, chat_id: int) -> int | None:
+        """
+        주어진 chat_id에 해당하는 user_id만 조회합니다. (알림 발행용 최적화)
+        """
+        query = text("""
+            SELECT user_id FROM chat WHERE chat_id = :chat_id
+        """)
+        result = await self.db.execute(query, {"chat_id": chat_id})
+        row = result.fetchone()
+        
+        return row[0] if row else None
 

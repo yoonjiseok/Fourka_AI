@@ -14,7 +14,6 @@ class FAQService:
 
 
     async def create_faq(self, question: str, answer: str, company_id: int, tag_id: int) -> FAQ:
-
         db_faq = FAQ(
             question=question,
             answer=answer,
@@ -22,7 +21,12 @@ class FAQService:
             tag_id=tag_id
         )
         try:
+
+            self.db_session.add(db_faq)
+
             await self.db_session.flush()
+
+            await self.db_session.refresh(db_faq)
 
             chroma_faq_service.upsert_faq(
                 faq_id=db_faq.faq_id,
@@ -31,7 +35,8 @@ class FAQService:
                 company_id=db_faq.company_id,
                 tag_id=db_faq.tag_id
             )
-            self.db_session.add(db_faq)
+            
+            # 5. 모든 작업이 성공하면 최종적으로 commit하여 트랜잭션을 완료합니다.
             await self.db_session.commit()
             
         except Exception as e:
@@ -39,7 +44,6 @@ class FAQService:
             await self.db_session.rollback()
             raise FaqException(message="FAQ creation failed. Please try again later.")
 
-        await self.db_session.refresh(db_faq)
         return db_faq
 
     async def update_faq(self, faq_id: int, question: str, answer: str, tag_id: int) -> FAQ | None:
