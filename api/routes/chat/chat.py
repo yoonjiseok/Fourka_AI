@@ -14,6 +14,7 @@ security_scheme = HTTPBearer()
 @chat_router.post("", response_model=SuccessResponse)
 async def chatting(
         request: chatDTO.ChatRequest,
+        current_user: dict = Depends(get_current_user),
         chat_service: ChatService = Depends(get_chat_service)
 ):
     response = await chat_service.send_chat(
@@ -29,8 +30,9 @@ async def chatting(
             "request_content": request.message,
             "response_content": response.answer,
             "meta_result": response.metadata,
-            "chat_id" : response.chat_id
         },
         message="Chatting successful",
         code=200
     )
+
+
