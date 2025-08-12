@@ -14,6 +14,6 @@ class KeywordService:
             raise ValueError("시작 날짜는 종료 날짜보다 클 수 없습니다.")
 
         top_keywords = await self.keyword_repository.get_top_keywords_by_period(
-            company_id=company_id, start_date=start_date, end_date=end_date, limit=5
+            company_id=company_id, start_date=start_date, end_date=end_date, limit=10
         )
         return top_keywords
