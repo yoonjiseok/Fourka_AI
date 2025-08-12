@@ -49,8 +49,8 @@ class FeedbackReason(enum.Enum):
     OTHER = "OTHER"
 
 class ChatType(enum.Enum):
-    DOC = "DOC"
     FAQ = "FAQ"
+    DOC = "DOC"
 
 
 # 3. 참조되는 모델들을 먼저 정의
