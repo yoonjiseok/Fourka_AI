@@ -22,6 +22,9 @@ class ChatService:
             keyword_repository=keyword_repository
         )
         self.app = chat_graph_manager.create_graph()
+        self.chat_repository = chat_repository
+        self.company_repository = company_repository
+        self.keyword_repository = keyword_repository
 
     async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int):
         if message.startswith("스몰톡"):
@@ -82,7 +85,7 @@ class ChatService:
             "similar_chunks": [] # 이 경우엔 필요 없음
         }
         # ChatGraph의 인스턴스 메서드를 직접 호출
-        graph_instance = ChatGraph(self.chat_repository, self.company_repository)
+        graph_instance = ChatGraph(self.chat_repository, self.company_repository, self.keyword_repository)
         response_dict = graph_instance.generate_llm_answer_node(state_for_generation)
         
         return chatDTO.ChatResponse(
