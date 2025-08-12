@@ -18,8 +18,8 @@ async def chatting(
 ):
     response = await chat_service.send_chat(
         message=request.message,
-        company_id = 3,
-        chat_room_id = 2, 
+        company_id = 1,
+        chat_room_id = 8, 
         # user_id=current_user.get("user_id")  
         user_id = 4
     )
