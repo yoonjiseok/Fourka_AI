@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from database.models import FeedbackType, FeedbackReason
+from typing import Optional
 
 class FeedbackCreateDTO(BaseModel):
     chat_id: int
@@ -11,3 +12,21 @@ class FeedbackCreateDTO(BaseModel):
 class TopKeywordDTO(BaseModel):
     keyword : str
     count : int
+
+class UserDetailResponseDto(BaseModel):
+    userId: int
+    email: str
+    name: str
+    position: Optional[str]
+    role: str
+    companyId: int
+    departmentId: int
+    departmentName: str
+    companyName: str
+
+class UserInfoResponse(BaseModel):
+    success: bool
+    code: int
+    timestamp: str
+    message: str
+    result: UserDetailResponseDto

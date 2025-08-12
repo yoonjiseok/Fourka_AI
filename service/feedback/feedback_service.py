@@ -6,7 +6,14 @@ from database.repository.chat_repository import ChatRepository
 from database.models import Feedback
 from database.models import FeedbackType
 from utils.db import async_redis_client
-from typing import List
+from typing import List, Optional
+import httpx
+import traceback
+import json
+
+from api.routes.feedback.feedbackDTO import UserInfoResponse
+from config import settings
+
 
 class FeedbackService:
     def __init__(self, feedback_repository: FeedbackRepository, chunk_repository: ChunkRepository, chat_repository: ChatRepository):
@@ -14,7 +21,7 @@ class FeedbackService:
         self.chunk_repository = chunk_repository
         self.chat_repository = chat_repository
         
-    async def create_feedback(self, feedback: Feedback):
+    async def create_feedback(self, feedback: Feedback, authorization: str):
         """
         피드백 타입(좋아요, 싫어요)에 따른 처리를 수행합니다.
         """
@@ -36,7 +43,7 @@ class FeedbackService:
             # 모든 비즈니스 로직이 성공적으로 완료된 후에만 알림 발행
             if created_feedback:
                 try:
-                    await self._publish_feedback_notification(created_feedback)
+                    await self._publish_feedback_notification(created_feedback, authorization)
                 except Exception as notification_error:
                     print(f"알림 발행 실패 (피드백 생성은 성공): {notification_error}")
                 
@@ -46,24 +53,61 @@ class FeedbackService:
             # 핵심 비즈니스 로직 오류 발생 시 (DB 저장, chunk 가중치 업데이트 등)
             print(f"피드백 생성 중 오류 발생: {e}")
             raise  # 상위로 예외 전파하여 롤백 처리
-    
-    async def _publish_feedback_notification(self, feedback: Feedback):
+
+    async def _publish_feedback_notification(self, feedback: Feedback, authorization: str):
         """피드백 생성 시 Redis Stream으로 알림을 발행합니다."""
+        user_id = 0
+
         try:
-            # user_id만 효율적으로 조회
-            user_id = await self.chat_repository.get_user_id_by_chat_id(feedback.chat_id)
-            if not user_id:
-                print(f"Chat ID {feedback.chat_id}를 찾을 수 없습니다.")
-                return
+            async with httpx.AsyncClient() as client:
+                headers = {"Authorization": authorization}
+
+                # 실제 요청
+                response = await client.get(
+                    f"{settings.USER_API_URL}/api/users/info/me",
+                    headers=headers
+                )
+
+                # 상태 코드 검사
+                response.raise_for_status()
+
+                # JSON 파싱 전 데이터 구조 확인
+                try:
+                    response_json = response.json()
+                except Exception as json_err:
+                    traceback.print_exc()
+                    return
+
+                # Pydantic 모델 검증
+                try:
+                    user_info = UserInfoResponse.model_validate(response_json)
+                except Exception as model_err:
+                    traceback.print_exc()
+                    return
+
+                # 필요한 값 추출
+                user_id = user_info.result.userId
+                department = user_info.result.departmentName
+                print(f"✅ [API] 사용자 ID({user_id}), 부서({department}) 조회 성공")
+
+        except httpx.HTTPStatusError as http_err:
+            print(f"[ERROR] HTTP 상태 코드 오류: {http_err}")
+            traceback.print_exc()
+        except httpx.RequestError as req_err:
+            print(f"[ERROR] 요청 자체 실패 (네트워크 문제 등): {req_err}")
+            traceback.print_exc()
+        except Exception as e:
+            print(f"🚨 [API] 사용자 정보 조회 중 알 수 없는 오류 발생: {e}")
+            traceback.print_exc()
             
+        try:
             # Redis Stream에 알림 전송
             await async_redis_client.xadd(
                 "notification-stream",
                 {
                     "senderId": str(user_id),
-                    "receiverId": "",  # 리시버는 현재 기능에서 없으므로 빈 값
-                    "type": feedback.feedback_type.value,
-                    "department": "",  # 부서 정보가 없으므로 빈 값
+                    "type": "FEEDBACK",
+                    "department": str(department),
                     "description": feedback.feedback_content or "",
                     "createdAt": datetime.utcnow().isoformat()
                 }
