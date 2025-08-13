@@ -12,6 +12,7 @@ from .chat_graph import ChatGraph  # 위에서 만든 클래스 import
 
 # 채팅방별로 HIL 컨텍스트를 10분간 저장하는 캐시
 hil_context_cache = TTLCache(maxsize=1000, ttl=600)
+smalltalk_history_cache = TTLCache(maxsize=1000, ttl=600)
 
 class ChatService:
     def __init__(self, chat_repository: ChatRepository, company_repository: CompanyRepository, keyword_repository: KeywordRepository):
@@ -28,9 +29,15 @@ class ChatService:
 
     async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int):
         if message.startswith("스몰톡"):
+            # chat_room_id와 user_id를 함께 전달하도록 수정합니다.
             return chatDTO.ChatResponse(
-                answer= await self.send_small_chat(message.replace("스몰톡", "")),
+                answer= await self.send_small_chat(
+                    message=message.replace("스몰톡", ""),
+                    chat_room_id=chat_room_id,
+                    user_id=user_id
+                ),
                 metadata=[]
+ 
             )
                     # --- 1. 재질문에 대한 답변인지 확인 ---
         cached_context = hil_context_cache.get(chat_room_id)
@@ -93,8 +100,8 @@ class ChatService:
             metadata=response_dict['final_metadata']
         )
 
-    async def send_small_chat(self, message: str):
-        """소소한 대화 처리"""
+    async def send_small_chat(self, message: str, chat_room_id: int, user_id: int):
+        """소소한 대화 처리 (대화 기록 기능 추가)"""
         bedrock_runtime = boto3.client(
             "bedrock-runtime",
             region_name=settings.BEDROCK_REGION_NAME,
@@ -102,21 +109,25 @@ class ChatService:
             aws_secret_access_key=settings.BEDROCK_SECRET_ACCESS_KEY,
         )
 
-        # 1. 모델이 요구하는 JSON 형식으로 본문(body) 구성
-        # Claude 3 모델의 경우 "messages" 형식을 사용합니다.
+        # 1. 현재 채팅방의 이전 대화 기록을 캐시에서 가져옵니다.
+        history = smalltalk_history_cache.get(chat_room_id, [])
+        
+        # 2. 이전 대화 기록을 포함하여 모델에 전달할 메시지 리스트를 구성합니다.
+        messages = []
+        for turn in history:
+            messages.append({"role": "user", "content": [{"type": "text", "text": turn["user"]}]})
+            messages.append({"role": "assistant", "content": [{"type": "text", "text": turn["assistant"]}]})
+        
+        # 현재 사용자의 질문을 추가합니다.
+        messages.append({"role": "user", "content": [{"type": "text", "text": message}]})
+
         body_data = {
             "anthropic_version": "bedrock-2023-05-31",
-            "system":prompt,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [{"type": "text", "text": message}]
-                }
-            ],
+            "system": prompt,
+            "messages": messages, # 수정된 메시지 리스트를 사용합니다.
             "max_tokens": 512
         }
 
-        # 2. JSON을 문자열로 변환하고 바이트로 인코딩
         body = json.dumps(body_data).encode('utf-8')
 
         try:
@@ -127,12 +138,14 @@ class ChatService:
                 accept="application/json"
             )
 
-            # 3. 응답 본문(body) 읽기 및 파싱
-            # StreamingBody 객체를 읽고 JSON으로 디코딩합니다.
             response_body = json.loads(response['body'].read())
-
-            # 4. 응답 텍스트 추출 (Claude 3 모델 기준)
             completion_text = response_body['content'][0]['text']
+
+            # 3. 현재 대화를 기록에 추가하고 캐시를 업데이트합니다.
+            history.append({"user": message, "assistant": completion_text})
+            
+            # 너무 길어지지 않도록 최근 5개의 대화만 저장합니다.
+            smalltalk_history_cache[chat_room_id] = history[-5:]
 
             return completion_text
 
