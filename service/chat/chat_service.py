@@ -83,27 +83,25 @@ class ChatService:
     async def _generate_answer_from_context(self, user_choice: str, context: list[dict]):
         """HIL 재질문 답변을 처리하기 위한 별도 로직"""
         
-        # 사용자가 선택한 주제와 관련된 내용만 필터링
         filtered_context = [
             item for item in context if user_choice.lower() in item.get('title', '').lower()
         ]
 
         if not filtered_context:
-            
             return chatDTO.ChatResponse(answer="선택지에 없는 주제입니다. 다시 질문해주세요.", metadata=[])
 
         state_for_generation = {
             "context_list": filtered_context,
             "user_question": user_choice,
-            "similar_chunks": [] # 이 경우엔 필요 없음
+            "similar_chunks": [] 
         }
-        # ChatGraph의 인스턴스 메서드를 직접 호출
+        
         graph_instance = ChatGraph(self.chat_repository, self.company_repository, self.keyword_repository)
         response_dict = graph_instance.generate_llm_answer_node(state_for_generation)
-        
+
         return chatDTO.ChatResponse(
             answer=response_dict['final_answer'],
-            metadata=filtered_context # 수정된 부분
+            metadata=filtered_context
         )
 
     async def send_small_chat(self, message: str, chat_room_id: int, user_id: int):
