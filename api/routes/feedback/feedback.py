@@ -131,7 +131,7 @@ async def get_weekly_feedback_count(
 @feedback_router.get("/hourly_count", response_model=SuccessResponse)
 async def get_hourly_feedback_count(
     date: str = Query(..., description="조회할 날짜 (YYYY-MM-DD 형식)"),
-    company_id: int = Query(..., description="회사 ID"),
+    current_user: dict = Depends(get_current_user),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
     """특정 날짜의 시간별 피드백 수를 조회합니다."""
@@ -140,7 +140,7 @@ async def get_hourly_feedback_count(
         from datetime import datetime
         datetime.strptime(date, "%Y-%m-%d")
         
-        result = await feedback_service.get_hourly_feedback_count(date, company_id)
+        result = await feedback_service.get_hourly_feedback_count(date, current_user.get("company_id"))
         return SuccessResponse(
             success=True,
             result=jsonable_encoder(result),
@@ -154,7 +154,7 @@ async def get_hourly_feedback_count(
 
 @feedback_router.get("/ratio", response_model=SuccessResponse)
 async def get_feedback_ratio(
-    company_id: int = Query(..., description="회사 ID"),
+    current_user: dict = Depends(get_current_user),
     start_date: str = Query(..., description="시작 날짜 (YYYY-MM-DD 형식)"),
     end_date: str = Query(..., description="종료 날짜 (YYYY-MM-DD 형식)"),
     feedback_service: FeedbackService = Depends(get_feedback_service)
@@ -166,7 +166,7 @@ async def get_feedback_ratio(
         datetime.strptime(start_date, "%Y-%m-%d")
         datetime.strptime(end_date, "%Y-%m-%d")
         
-        result = await feedback_service.get_feedback_ratio(company_id, start_date, end_date)
+        result = await feedback_service.get_feedback_ratio(current_user.get("company_id"), start_date, end_date)
         return SuccessResponse(
             success=True,
             result=jsonable_encoder(result),
@@ -214,7 +214,7 @@ async def delete_feedback(
     
 @feedback_router.get("/top", response_model=List[TopKeywordDTO])
 async def get_top_keywords(
-    company_id: int,
+    current_user: dict = Depends(get_current_user),
     start_date: date = Query(..., description="조회 시작 날짜 (YYYY-MM-DD)"),
     end_date: date = Query(..., description="조회 종료 날짜 (YYYY-MM-DD)"),
     db: AsyncSession = Depends(get_db),
@@ -226,7 +226,7 @@ async def get_top_keywords(
     keyword_service = KeywordService(keyword_repo)
     
     top_keywords = await keyword_service.get_top_keywords(
-        company_id=company_id, start_date=start_date, end_date=end_date
+        company_id=current_user.get("company_id"), start_date=start_date, end_date=end_date
     )
     return top_keywords
 

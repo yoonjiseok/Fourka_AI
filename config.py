@@ -47,10 +47,10 @@ class Settings(BaseSettings):
     REDIS_URL: str
     
     # Redis 스트림용 개별 설정
-    REDIS_HOST: str
-    REDIS_PORT: int
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
 
-    USER_API_URL: str
+    USER_API_URL: str = "http://localhost:8000"  # 기본값 설정
 
 
 
