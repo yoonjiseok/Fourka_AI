@@ -3,9 +3,7 @@ from fastapi.security import HTTPBearer
 
 from fastapi.encoders import jsonable_encoder
 from typing import List
-from database.repository.keyword_repository import KeywordRepository
-from service.chat.keyword_service import KeywordService
-from api.routes.feedback.feedbackDTO import FeedbackCreateDTO, TopKeywordDTO
+
 from dependencies.auth_dependency import get_current_user
 
 from dependencies.service_dependency import get_feedback_service
@@ -126,7 +124,7 @@ async def get_weekly_feedback_count(
 @feedback_router.get("/hourly_count", response_model=SuccessResponse)
 async def get_hourly_feedback_count(
     date: str = Query(..., description="조회할 날짜 (YYYY-MM-DD 형식)"),
-    current_user: dict = Depends(get_current_user),
+    company_id: int = Query(..., description="회사 ID"),
     feedback_service: FeedbackService = Depends(get_feedback_service)
 ):
     """특정 날짜의 시간별 피드백 수를 조회합니다."""
@@ -135,7 +133,7 @@ async def get_hourly_feedback_count(
         from datetime import datetime
         datetime.strptime(date, "%Y-%m-%d")
         
-        result = await feedback_service.get_hourly_feedback_count(date, current_user.get("company_id"))
+        result = await feedback_service.get_hourly_feedback_count(date, company_id)
         return SuccessResponse(
             success=True,
             result=jsonable_encoder(result),
@@ -149,7 +147,7 @@ async def get_hourly_feedback_count(
 
 @feedback_router.get("/ratio", response_model=SuccessResponse)
 async def get_feedback_ratio(
-    current_user: dict = Depends(get_current_user),
+    company_id: int = Query(..., description="회사 ID"),
     start_date: str = Query(..., description="시작 날짜 (YYYY-MM-DD 형식)"),
     end_date: str = Query(..., description="종료 날짜 (YYYY-MM-DD 형식)"),
     feedback_service: FeedbackService = Depends(get_feedback_service)
@@ -161,7 +159,7 @@ async def get_feedback_ratio(
         datetime.strptime(start_date, "%Y-%m-%d")
         datetime.strptime(end_date, "%Y-%m-%d")
         
-        result = await feedback_service.get_feedback_ratio(current_user.get("company_id"), start_date, end_date)
+        result = await feedback_service.get_feedback_ratio(company_id, start_date, end_date)
         return SuccessResponse(
             success=True,
             result=jsonable_encoder(result),
@@ -195,13 +193,15 @@ async def delete_feedback(
     try:
         await feedback_service.delete_feedback(feedback_id)
         return SuccessResponse(
-            success=True, 
-            message="피드백이 성공적으로 삭제되었습니다.",
+            success=True,
+            result=stats,
+            message="피드백 사유 통계가 성공적으로 조회되었습니다.",
             code=200
         )
-    except ValueError as e:
-        # 존재하지 않는 피드백 ID
-        raise HTTPException(status_code=404, detail=str(e))
+    except KeyError:
+        raise HTTPException(status_code=401, detail="JWT 토큰에 company_id가 포함되어 있지 않습니다.")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. YYYY-MM-DD 형식으로 입력해주세요.")
     except Exception as e:
         # 기타 서버 오류
         raise HTTPException(status_code=500, detail=f"피드백 삭제 중 오류가 발생했습니다: {str(e)}")
