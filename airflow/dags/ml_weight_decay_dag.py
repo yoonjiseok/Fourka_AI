@@ -13,6 +13,8 @@ from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.operators.python import PythonOperator
 from airflow.operators.email import EmailOperator
+from airflow.kubernetes.secret import Secret
+from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 
 # DAG 기본 설정
 default_args = {
@@ -39,6 +41,7 @@ dag = DAG(
 
 def create_decay_logs_table():
     """로그 테이블이 없으면 생성"""
+    # 쿠버네티스에서는 Connection이 환경변수로 자동 설정됨
     hook = PostgresHook(postgres_conn_id='fourka_db')
     hook.run("""
         CREATE TABLE IF NOT EXISTS decay_logs (

@@ -22,7 +22,7 @@ async def chatting(
         company_id = 3,
         chat_room_id = 2,
         # user_id=current_user.get("user_id")  
-        user_id = 4
+        user_id = 8
     )
 
     return SuccessResponse(

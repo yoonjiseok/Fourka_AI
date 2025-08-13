@@ -1,0 +1,82 @@
+# Airflow Helm Chart Values for Kubernetes
+# 사용: helm install airflow apache-airflow/airflow -f values.yaml
+
+# Airflow 기본 설정
+airflow:
+  # 이미지 설정
+  image:
+    repository: apache/airflow
+    tag: "2.7.0"
+    pullPolicy: IfNotPresent
+  
+  # Executor 설정 (쿠버네티스용)
+  executor: "KubernetesExecutor"  # Docker Compose에서는 LocalExecutor
+  
+  # Configuration
+  config:
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth"
+    
+    # 쿠버네티스 전용 설정
+    AIRFLOW__KUBERNETES__NAMESPACE: "airflow"
+    AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: "apache/airflow"
+    AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: "2.7.0"
+    AIRFLOW__KUBERNETES__DELETE_WORKER_PODS: "true"
+
+# 데이터베이스 설정 (외부 PostgreSQL 사용)
+postgresql:
+  enabled: false  # 내장 DB 비활성화
+  
+# 외부 데이터베이스 연결
+externalDatabase:
+  type: postgres
+  host: "fourka-postgres-service"  # 쿠버네티스 서비스명
+  port: 5432
+  database: "airflow"
+  user: "airflow"
+  passwordSecret: "airflow-db-secret"
+  passwordSecretKey: "password"
+
+# Redis (CeleryExecutor 사용 시 필요, KubernetesExecutor는 불필요)
+redis:
+  enabled: false
+
+# PVC 설정 (DAGs, Logs 공유용)
+persistence:
+  enabled: true
+  storageClass: "standard"  # 클러스터에 맞게 수정
+  accessMode: ReadWriteMany
+  size: 10Gi
+
+# 서비스 설정
+webserver:
+  service:
+    type: ClusterIP  # LoadBalancer로 변경하여 외부 노출 가능
+    port: 8080
+
+# 리소스 제한
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+
+# 환경변수 (Secret으로 관리)
+env:
+  - name: AIRFLOW_CONN_FOURKA_DB
+    valueFrom:
+      secretKeyRef:
+        name: fourka-db-secret
+        key: connection-string
+
+# DAGs 동기화 (Git 또는 S3 사용)
+dags:
+  gitSync:
+    enabled: true
+    repo: "https://github.com/your-org/fourka-airflow-dags.git"
+    branch: "main"
+    subPath: "dags"
+    interval: 60s  # 1분마다 동기화
