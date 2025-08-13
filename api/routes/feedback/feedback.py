@@ -4,6 +4,10 @@ from fastapi.security import HTTPBearer
 from fastapi.encoders import jsonable_encoder
 from typing import List
 
+
+from database.repository.keyword_repository import KeywordRepository
+from service.chat.keyword_service import KeywordService
+from api.routes.feedback.feedbackDTO import FeedbackCreateDTO, TopKeywordDTO
 from dependencies.auth_dependency import get_current_user
 
 from dependencies.service_dependency import get_feedback_service
@@ -193,9 +197,8 @@ async def delete_feedback(
     try:
         await feedback_service.delete_feedback(feedback_id)
         return SuccessResponse(
-            success=True,
-            result=stats,
-            message="피드백 사유 통계가 성공적으로 조회되었습니다.",
+            success=True, 
+            message="피드백이 성공적으로 삭제되었습니다.",
             code=200
         )
     except KeyError:
