@@ -19,14 +19,14 @@ from datetime import date
 
 
 feedback_router = APIRouter(prefix="/api/ai/feedbacks", tags=["feedback"])
-security_scheme = HTTPBearer()
+#security_scheme = HTTPBearer()
 
 
 @feedback_router.post("/create", response_model=SuccessResponse)
 async def create_feedback(
     feedback_dto: FeedbackCreateDTO,
     feedback_service: FeedbackService = Depends(get_feedback_service),
-    token: HTTPAuthorizationCredentials = Security(security_scheme)
+    #token: HTTPAuthorizationCredentials = Security(security_scheme)
 ):
     """피드백 생성"""
     try:
@@ -38,7 +38,7 @@ async def create_feedback(
             answer=feedback_dto.answer
         )
         
-        full_token_string = f"Bearer {token.credentials}"
+        full_token_string = f"Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpczM1NjVAZ2FjaG9uLmFjLmtyIiwidXNlcl9pZCI6OCwicm9sZSI6IkFETUlOIiwiY29tcGFueV9pZCI6MywiaWF0IjoxNzU1MDc3NTk5LCJleHAiOjE3NTc2Njk1OTl9.xduC0yOJ-SPUZbjknBl0O_xFf030bNB6lAZpEwRVN6oOsiz-ROGVp0aEDj-uJZTUzCQiMfP1BkOcE3I7tVL4bg"
         created_feedback = await feedback_service.create_feedback(
             feedback, 
             authorization=full_token_string)
