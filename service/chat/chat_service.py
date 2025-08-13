@@ -131,7 +131,7 @@ class ChatService:
             "anthropic_version": "bedrock-2023-05-31",
             "system": prompt,
             "messages": messages, # 수정된 메시지 리스트를 사용합니다.
-            "max_tokens": 512
+            "max_tokens": 256
         }
 
         body = json.dumps(body_data).encode('utf-8')
