@@ -110,3 +110,7 @@ class FeedbackService:
             raise ValueError(f"피드백 ID {feedback_id}를 찾을 수 없습니다.")
         
         return deleted
+    
+    async def get_feedback_reason_stats(self, company_id: int, start_date: str = None, end_date: str = None):
+        """회사별 피드백 사유 통계 조회"""
+        return await self.feedback_repository.get_feedback_reason_stats(company_id, start_date, end_date)

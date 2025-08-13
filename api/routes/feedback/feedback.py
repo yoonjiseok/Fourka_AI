@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBearer
+
 from fastapi.encoders import jsonable_encoder
 from typing import List
 from database.repository.keyword_repository import KeywordRepository
 from service.chat.keyword_service import KeywordService
 from api.routes.feedback.feedbackDTO import FeedbackCreateDTO, TopKeywordDTO
 from dependencies.auth_dependency import get_current_user
+
 from dependencies.service_dependency import get_feedback_service
 from model.response_models import SuccessResponse
 from service.feedback.feedback_service import FeedbackService
@@ -13,6 +15,7 @@ from database.models import Feedback
 from sqlalchemy.ext.asyncio import AsyncSession
 from utils.db import get_db
 from datetime import date
+
 
 feedback_router = APIRouter(prefix="/api/ai/feedbacks", tags=["feedback"])
 security_scheme = HTTPBearer()
@@ -119,6 +122,7 @@ async def get_weekly_feedback_count(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"주별 피드백 수 조회 중 오류가 발생했습니다: {str(e)}")
 
+
 @feedback_router.get("/hourly_count", response_model=SuccessResponse)
 async def get_hourly_feedback_count(
     date: str = Query(..., description="조회할 날짜 (YYYY-MM-DD 형식)"),
@@ -181,25 +185,6 @@ async def get_feedback_reasons():
     ]
     return feedback_reasons
 
-@feedback_router.delete("/delete/{feedback_id}", response_model=SuccessResponse)
-async def delete_feedback(
-    feedback_id: int,
-    feedback_service: FeedbackService = Depends(get_feedback_service)
-):
-    """피드백 삭제"""
-    try:
-        await feedback_service.delete_feedback(feedback_id)
-        return SuccessResponse(
-            success=True, 
-            message="피드백이 성공적으로 삭제되었습니다.",
-            code=200
-        )
-    except ValueError as e:
-        # 존재하지 않는 피드백 ID
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        # 기타 서버 오류
-        raise HTTPException(status_code=500, detail=f"피드백 삭제 중 오류가 발생했습니다: {str(e)}")
     
 @feedback_router.delete("/delete/{feedback_id}", response_model=SuccessResponse)
 async def delete_feedback(
@@ -238,3 +223,27 @@ async def get_top_keywords(
         company_id=company_id, start_date=start_date, end_date=end_date
     )
     return top_keywords
+
+@feedback_router.get("/reason-stats", response_model=SuccessResponse)
+async def get_feedback_reason_statistics(
+    start_date: str = Query(None, description="시작 날짜 (YYYY-MM-DD)", regex=r'^\d{4}-\d{2}-\d{2}$'),
+    end_date: str = Query(None, description="종료 날짜 (YYYY-MM-DD)", regex=r'^\d{4}-\d{2}-\d{2}$'),
+    current_user: dict = Depends(get_current_user),
+    feedback_service: FeedbackService = Depends(get_feedback_service)):
+        """회사별 피드백 사유 통계를 조회합니다."""    
+        try: 
+            company_id = current_user.get("company_id")                
+            # 피드백 사유 통계 조회        
+            stats = await feedback_service.get_feedback_reason_stats(company_id, start_date, end_date)                
+            return SuccessResponse(            
+                success=True,            
+                result=stats,            
+                message="피드백 사유 통계가 성공적으로 조회되었습니다.",            
+                code=200        
+                )    
+        except KeyError:        
+            raise HTTPException(status_code=401, detail="JWT 토큰에 company_id가 포함되어 있지 않습니다.")    
+        except ValueError:        
+            raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. YYYY-MM-DD 형식으로 입력해주세요.")    
+        except Exception as e:        
+            raise HTTPException(status_code=500, detail=f"피드백 사유 통계 조회 중 오류가 발생했습니다: {str(e)}")

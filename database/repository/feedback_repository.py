@@ -305,3 +305,56 @@ class FeedbackRepository:
             
             # 실제로 삭제된 행의 수를 확인 (안전장치)
             return result.rowcount > 0
+        
+    async def get_feedback_reason_stats(self, company_id: int, start_date: str = None, end_date: str = None) -> List[dict]:
+            """회사별 피드백 사유 통계를 조회합니다."""
+            try:
+                # 기본 쿼리
+                base_query = """
+                    SELECT 
+                        feedback_reason,
+                        COUNT(*) as count
+                    FROM company_feedback
+                    WHERE company_id = :company_id
+                    AND feedback_type = 'UNLIKE'
+                    AND feedback_reason IS NOT NULL
+                """
+                
+                params = {"company_id": company_id}
+                
+                # 날짜 필터 추가
+                if start_date and end_date:
+                    from datetime import datetime
+                    start_date_obj = datetime.strptime(start_date, "%Y-%m-%d").date()
+                    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d").date()
+                    
+                    base_query += " AND DATE(created_at) BETWEEN :start_date AND :end_date"
+                    params["start_date"] = start_date_obj
+                    params["end_date"] = end_date_obj
+                
+                base_query += " GROUP BY feedback_reason ORDER BY count DESC"
+                
+                async with self.db as session:
+                    result = await session.execute(text(base_query), params)
+                    rows = result.fetchall()
+                    
+                    # 결과를 딕셔너리 리스트로 변환
+                    stats = []
+                    total_count = sum(row[1] for row in rows)
+                    
+                    for row in rows:
+                        reason = row[0]
+                        count = row[1]
+                        percentage = round((count / total_count) * 100, 2) if total_count > 0 else 0
+                        
+                        stats.append({
+                            "feedback_reason": reason,
+                            "count": count,
+                            "percentage": percentage
+                        })
+                    
+                    return stats
+                    
+            except Exception as e:
+                print(f"피드백 사유 통계 조회 중 오류 발생: {e}")
+                return []
