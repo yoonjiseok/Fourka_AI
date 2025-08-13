@@ -38,8 +38,8 @@ kubectl get services -n $NAMESPACE
 # 6. Webserver URL 출력
 echo ""
 echo "🌐 Airflow Webserver 접근 방법:"
-echo "Port Forward: kubectl port-forward svc/fourka-airflow-webserver 8080:8080 -n $NAMESPACE"
-echo "브라우저: http://localhost:8080"
+echo "Port Forward: kubectl port-forward svc/fourka-airflow-webserver 8085:8080 -n $NAMESPACE"
+echo "브라우저: http://localhost:8085"
 echo "계정: admin / admin"
 
 echo ""
