@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
 
-    USER_API_URL: str = "http://localhost:8000"  # 기본값 설정
+    USER_API_URL: str  # 기본값 설정
 
 
 
