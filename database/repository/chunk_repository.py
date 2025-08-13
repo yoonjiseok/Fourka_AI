@@ -14,14 +14,17 @@ class ChunkRepository:
             return
             
         # 각 청크를 개별적으로 업데이트
-        for doc_id, chunk_id in chunk_ids:
-            query = text("""
-                UPDATE chunk
-                SET weight = weight * 1.1,
-                    updated_at = NOW()
-                WHERE doc_id = :doc_id AND chunk_id = :chunk_id
-            """)
-            await self.db.execute(query, {"doc_id": doc_id, "chunk_id": chunk_id})
+        for chunk_info in chunk_ids:
+            if isinstance(chunk_info, (list, tuple)) and len(chunk_info) == 2:
+                doc_id, chunk_id = chunk_info
+                if doc_id is not None and chunk_id is not None:
+                    query = text("""
+                        UPDATE chunk
+                        SET weight = weight * 1.1,
+                            updated_at = NOW()
+                        WHERE doc_id = :doc_id AND chunk_id = :chunk_id
+                    """)
+                    await self.db.execute(query, {"doc_id": doc_id, "chunk_id": chunk_id})
         await self.db.commit()
 
     
