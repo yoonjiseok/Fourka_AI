@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.security import HTTPBearer
-
+from fastapi import APIRouter, Depends, HTTPException, Query, Header, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.encoders import jsonable_encoder
 from typing import List
 
@@ -26,7 +25,8 @@ security_scheme = HTTPBearer()
 @feedback_router.post("/create", response_model=SuccessResponse)
 async def create_feedback(
     feedback_dto: FeedbackCreateDTO,
-    feedback_service: FeedbackService = Depends(get_feedback_service)
+    feedback_service: FeedbackService = Depends(get_feedback_service),
+    token: HTTPAuthorizationCredentials = Security(security_scheme)
 ):
     """피드백 생성"""
     try:
@@ -38,7 +38,10 @@ async def create_feedback(
             answer=feedback_dto.answer
         )
         
-        created_feedback = await feedback_service.create_feedback(feedback)
+        full_token_string = f"Bearer {token.credentials}"
+        created_feedback = await feedback_service.create_feedback(
+            feedback, 
+            authorization=full_token_string)
         
         return SuccessResponse(
             success=True,

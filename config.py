@@ -50,6 +50,8 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
 
+    USER_API_URL: str
+
 
 
 settings = Settings()
