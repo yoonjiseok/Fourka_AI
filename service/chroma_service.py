@@ -1,3 +1,12 @@
+# SQLite 호환성 패치
+import sys
+try:
+    # pysqlite3-binary 사용하여 SQLite 버전 호환성 해결
+    import pysqlite3
+    sys.modules['sqlite3'] = pysqlite3
+except ImportError:
+    pass
+
 import boto3
 import chromadb
 import json
