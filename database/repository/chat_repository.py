@@ -84,13 +84,36 @@ class ChatRepository:
 
     async def get_chunk_ids_by_chat_id(self, chat_id: int) -> list:
         """
-        주어진 chat_id에 해당하는 chunk_id들을 추출합니다.
+        주어진 chat_id에 해당하는 (doc_id, chunk_id) 튜플들을 반환합니다.
+        기존 데이터는 chunk_id만 있을 수 있으므로 호환성을 위해 doc_id를 조회합니다.
         """
-        query = text("""
+        query = text("""    
             SELECT chunk_ids FROM chat WHERE chat_id = :chat_id
         """)
         result = await self.db.execute(query, {"chat_id": chat_id})
-        return result.fetchone()[0]
+        chunk_ids_data = result.fetchone()[0]
+        
+        if not chunk_ids_data:
+            return []
+        
+        # chunk_ids_data가 이미 튜플 리스트인지 확인
+        if chunk_ids_data and isinstance(chunk_ids_data[0], (list, tuple)):
+            # 이미 (doc_id, chunk_id) 형태
+            return chunk_ids_data
+        
+        # 기존 형태 (단순 정수 리스트)라면 doc_id를 조회하여 변환
+        result_with_doc_ids = []
+        for chunk_id in chunk_ids_data:
+            if chunk_id is not None:
+                doc_query = text("""
+                    SELECT doc_id FROM chunk WHERE chunk_id = :chunk_id LIMIT 1
+                """)
+                doc_result = await self.db.execute(doc_query, {"chunk_id": chunk_id})
+                doc_row = doc_result.fetchone()
+                if doc_row:
+                    result_with_doc_ids.append((doc_row[0], chunk_id))
+        
+        return result_with_doc_ids
 
     async def get_user_id_by_chat_id(self, chat_id: int) -> int | None:
         """

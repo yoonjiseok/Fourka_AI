@@ -245,9 +245,9 @@ class ChatGraph:
         
         faq_id = None
         chunk_ids = []
-        # FAQ 답변이 아닐 경우(RAG를 거친 경우)에만 chunk_id를 저장
+        # FAQ 답변이 아닐 경우(RAG를 거친 경우)에만 (doc_id, chunk_id)를 저장
         if not state.get("is_faq_found", False):
-             chunk_ids=[item.get("chunk_id") for item in state.get("final_metadata", []) if item.get("source") == "Document"]
+             chunk_ids=[(item.get("doc_id"), item.get("chunk_id")) for item in state.get("final_metadata", []) if item.get("source") == "Document" and item.get("doc_id") and item.get("chunk_id")]
         else:
             if state.get("final_metadata"):
                 faq_id = state["final_metadata"][0].get("faq_id")
