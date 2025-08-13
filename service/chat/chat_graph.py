@@ -169,7 +169,7 @@ class ChatGraph:
         """[노드 3] HIL 실행 여부를 결정합니다."""
         print("--- 노드 3: HIL 실행 여부 확인 ---")
         company = await self.company_repository.find_by_company_id(state['company_id'])
-        threshold = company.think_level if company else 0.7
+        threshold = (company.think_level * 0.1) if company else 0.7
         is_hil_triggered = True
         for chunk in state['similar_chunks']:
             if chunk[5] >= threshold:
@@ -200,7 +200,6 @@ class ChatGraph:
             f"선택 가능한 주제: {', '.join(topics)}"
         )
         
-
         return {"final_answer": re_prompt_message, "final_metadata": context, "is_re_prompt": True, "keywords": state.get("keywords", [])}
 
     
@@ -283,7 +282,7 @@ class ChatGraph:
         else:
             print("WARNING: chat_id 또는 keywords가 없어서 저장을 건너뜁니다.")
             
-        return {}
+        return {chat_id, keywords}
 
     def _text_to_embedding(self, text: str) -> list:
         """텍스트를 임베딩으로 변환하는 헬퍼 함수"""

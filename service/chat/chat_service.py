@@ -29,17 +29,23 @@ class ChatService:
 
     async def send_chat(self, message: str, company_id: int, chat_room_id: int, user_id: int):
         if message.startswith("스몰톡"):
-            # chat_room_id와 user_id를 함께 전달하도록 수정합니다.
-            return chatDTO.ChatResponse(
-                answer= await self.send_small_chat(
-                    message=message.replace("스몰톡", ""),
-                    chat_room_id=chat_room_id,
-                    user_id=user_id
-                ),
-                metadata=[]
- 
+            # 1. send_small_chat의 결과를 변수에 저장합니다.
+            smalltalk_answer = await self.send_small_chat(
+                message=message.replace("스몰톡", ""),
+                chat_room_id=chat_room_id,
+                user_id=user_id
             )
-                    # --- 1. 재질문에 대한 답변인지 확인 ---
+            
+            # 2. 결과가 None인지 확인하고, None이면 기본 오류 메시지를 설정합니다.
+            if smalltalk_answer is None:
+                smalltalk_answer = "죄송해요, 지금은 스몰톡 답변을 생성할 수 없어요. 나중에 다시 시도해주세요."
+
+            return chatDTO.ChatResponse(
+                answer=smalltalk_answer, # 안전하게 처리된 값을 전달합니다.
+                metadata=[]
+            )
+
+        # --- 1. 재질문에 대한 답변인지 확인 ---
         cached_context = hil_context_cache.get(chat_room_id)
         
         if cached_context:
@@ -71,7 +77,7 @@ class ChatService:
         return chatDTO.ChatResponse(
             answer=final_state['final_answer'],
             metadata=final_state['final_metadata'],
-            chat_id=final_state.get('chat_id')
+            chat_id=final_state['chat_id']
         )
 
     async def _generate_answer_from_context(self, user_choice: str, context: list[dict]):
@@ -97,7 +103,7 @@ class ChatService:
         
         return chatDTO.ChatResponse(
             answer=response_dict['final_answer'],
-            metadata=response_dict['final_metadata']
+            metadata=filtered_context # 수정된 부분
         )
 
     async def send_small_chat(self, message: str, chat_room_id: int, user_id: int):

@@ -30,6 +30,7 @@ async def chatting(
             "request_content": request.message,
             "response_content": response.answer,
             "meta_result": response.metadata,
+            "chat_id": response.chat_id
         },
         message="Chatting successful",
         code=200
