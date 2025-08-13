@@ -282,7 +282,7 @@ class ChatGraph:
         else:
             print("WARNING: chat_id 또는 keywords가 없어서 저장을 건너뜁니다.")
             
-        return {chat_id, keywords}
+        return {}
 
     def _text_to_embedding(self, text: str) -> list:
         """텍스트를 임베딩으로 변환하는 헬퍼 함수"""
