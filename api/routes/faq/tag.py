@@ -70,3 +70,29 @@ async def get_tags_by_company(
     except Exception as e:
         # 그 외의 예외는 500 오류로 처리합니다.
         raise HTTPException(status_code=500, detail=f"태그 조회 중 오류가 발생했습니다: {str(e)}")
+
+@tag_router.delete("/delete/{tag_id}", response_model=SuccessResponse)
+async def delete_tag(
+    tag_id: int = Path(..., title="Tag ID", description="삭제할 태그의 ID"),
+    current_user: dict = Depends(get_current_user),
+    tag_service: TagService = Depends(get_tag_service),
+):
+    """
+    지정된 ID의 태그를 삭제합니다.
+    - tag_id: 삭제할 태그의 고유 ID
+    - 제약조건: 해당 태그를 사용 중인 FAQ가 하나라도 있으면 삭제할 수 없습니다.
+    """
+    try:
+        deleted_tag_id = await tag_service.delete_tag(tag_id)
+        return SuccessResponse(
+            success=True,
+            result={"tag_id": deleted_tag_id},
+            message="태그가 성공적으로 삭제되었습니다.",
+            code=200
+        )
+    except ValueError as e:
+        # 서비스 계층에서 발생시킨 예외 (400 Bad Request)
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        # 그 외 예상치 못한 서버 오류 (500 Internal Server Error)
+        raise HTTPException(status_code=500, detail=f"태그 삭제 중 오류가 발생했습니다: {str(e)}")

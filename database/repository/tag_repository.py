@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy import select, delete
 from typing import List, Optional
 
-from database.models import Tag
+from database.models import Tag, FAQ
 
 
 class TagRepository:
@@ -34,3 +34,18 @@ class TagRepository:
         result = await self.db.execute(stmt)
         tag = result.scalar_one_or_none()
         return tag is not None 
+
+    async def is_tag_in_use(self, tag_id: int) -> bool:
+        """해당 태그 ID를 사용하는 FAQ가 하나라도 있는지 확인합니다."""
+        stmt = select(FAQ).where(FAQ.tag_id == tag_id)
+        result = await self.db.execute(stmt)
+        # 결과가 하나라도 있으면 True를 반환
+        return result.scalars().first() is not None
+
+    async def delete_tag_by_id(self, tag_id: int) -> bool:
+        """태그 ID를 기준으로 태그를 삭제하고, 성공 여부를 반환합니다."""
+        stmt = delete(Tag).where(Tag.tag_id == tag_id)
+        result = await self.db.execute(stmt)
+        await self.db.commit()
+        # rowcount가 0보다 크면 최소 한 개의 행이 삭제되었음을 의미합니다.
+        return result.rowcount > 0

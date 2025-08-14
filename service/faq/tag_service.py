@@ -31,3 +31,21 @@ class TagService:
             )
             for tag in tags
         ] 
+    
+    async def delete_tag(self, tag_id: int) -> int:
+        """
+        태그를 삭제합니다. 만약 해당 태그를 사용하는 FAQ가 있다면 예외를 발생시킵니다.
+        """
+        # 1. 태그를 사용하는 FAQ가 있는지 확인해 데이터 무결성을 보장
+        if await self.tag_repo.is_tag_in_use(tag_id):
+            raise ValueError("해당 태그를 사용하고 있는 FAQ가 있어 삭제할 수 없습니다.")
+
+        # 2. Repository를 통해 태그를 삭제
+        success = await self.tag_repo.delete_tag_by_id(tag_id)
+
+        # 3. 만약 삭제에 실패했다면 (존재하지 않는 태그 ID), 예외를 발생시킵니다.
+        if not success:
+            raise ValueError("존재하지 않는 태그입니다.")
+
+        return tag_id
+    
