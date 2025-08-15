@@ -3,8 +3,7 @@ from datetime import datetime
 from database.repository.feedback_repository import FeedbackRepository
 from database.repository.chunk_repository import ChunkRepository
 from database.repository.chat_repository import ChatRepository
-from database.models import Feedback
-from database.models import FeedbackType
+from database.models import Feedback, FeedbackType, FeedbackReason
 from utils.db import async_redis_client
 from typing import List, Optional
 import httpx
@@ -57,6 +56,17 @@ class FeedbackService:
     async def _publish_feedback_notification(self, feedback: Feedback, authorization: str):
         """피드백 생성 시 Redis Stream으로 알림을 발행합니다."""
         user_id = 0
+        department = "Unknown"
+
+        # --- 피드백 사유 한글 매핑 딕셔너리 ---
+        feedback_reason_korean = {
+            FeedbackReason.OUTDATED_INFO: "오래된 정보",
+            FeedbackReason.INTENT_FAILURE: "질문 의도 파악 실패",
+            FeedbackReason.WRONG_ANSWER: "잘못된 답변",
+            FeedbackReason.MISSING_INFO: "정보 누락",
+            FeedbackReason.OTHER: "기타"
+        }
+        # --- 피드백 사유 한글 매핑 딕셔너리 ---
 
         try:
             async with httpx.AsyncClient() as client:
@@ -100,6 +110,20 @@ class FeedbackService:
         except Exception as e:
             print(f"🚨 [API] 사용자 정보 조회 중 알 수 없는 오류 발생: {e}")
             traceback.print_exc()
+
+        notification_description = ""
+        if feedback.feedback_type == FeedbackType.UNLIKE:
+            if feedback.feedback_reason == FeedbackReason.OTHER:
+                # '기타' 사유일 경우, 사용자가 입력한 content를 description으로 사용
+                notification_description = feedback.feedback_content or "기타 의견 (내용 없음)"
+            elif feedback.feedback_reason in feedback_reason_korean:
+                # '기타'가 아닌 다른 명시적 사유가 있을 경우, 한글 맵에서 해당 사유를 찾아 description으로 사용
+                notification_description = feedback_reason_korean[feedback.feedback_reason]
+            else:
+                # UNLIKE 이지만 사유가 없는 경우에 대한 예외 처리
+                notification_description = "분류되지 않은 싫어요 피드백"
+        
+        print(f"✅ [DEBUG] Redis 전송 예정 데이터 | senderId: {user_id}, department: '{department}', description: '{notification_description}'")
             
         try:
             # Redis Stream에 알림 전송
@@ -110,7 +134,7 @@ class FeedbackService:
                     "type": "FEEDBACK",
                     "companyId": str(company_id),
                     "department": str(department),
-                    "description": feedback.feedback_content or "",
+                    "description": notification_description,
                     "createdAt": datetime.utcnow().isoformat()
                 }
             )
