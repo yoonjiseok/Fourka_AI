@@ -44,18 +44,13 @@ class ChatGraph:
         self.chat_repository = chat_repository
         self.company_repository = company_repository
         self.keyword_repository = keyword_repository
-        
+        self.stopwords_path = stopwords_path
+        self.stopwords = None  # 파일을 로드하는 대신 None으로 초기화
+
         # Okt 분석기 초기화
         self.okt = Okt()
 
-        try:
-            with open(stopwords_path, 'r', encoding='utf-8') as f:
-                self.stopwords = set(f.read().splitlines())
-            print(f"불용어 사전 로드 완료: {len(self.stopwords)}개")
-        except FileNotFoundError:
-            self.stopwords = set()
-            print("경고: stopwords.txt 파일을 찾을 수 없어, 불용어 사전을 비운 상태로 시작합니다.")
-
+        # AWS Bedrock 클라이언트 초기화 로직은 그대로 둡니다.
         try:
             self.bedrock_runtime = boto3.client(
                 "bedrock-runtime",
@@ -68,7 +63,21 @@ class ChatGraph:
         except Exception as e:
             raise RuntimeError(f"AWS Bedrock 클라이언트 초기화 실패: {e}")
         
+    def _load_stopwords(self):
+        """불용어 사전이 아직 로드되지 않았을 경우에만 파일을 로드합니다."""
+        if self.stopwords is not None:
+            return
+        
+        try:
+            with open(self.stopwords_path, 'r', encoding='utf-8') as f:
+                self.stopwords = set(f.read().splitlines())
+            print(f"지연 로딩: 불용어 사전 로드 완료 ({len(self.stopwords)}개)")
+        except FileNotFoundError:
+            self.stopwords = set()
+            print(f"경고: {self.stopwords_path} 파일을 찾을 수 없어, 불용어 사전을 비운 상태로 시작합니다.")
+                
     async def _extract_keywords_async(self, text: str) -> list:
+        self._load_stopwords()
         loop = asyncio.get_running_loop()
         
         # 불용어 처리 로직은 여기에 그대로 적용
