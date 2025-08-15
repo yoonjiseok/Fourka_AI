@@ -50,7 +50,6 @@ class ChatGraph:
         # Okt 분석기 초기화
         self.okt = Okt()
 
-        # AWS Bedrock 클라이언트 초기화 로직은 그대로 둡니다.
         try:
             self.bedrock_runtime = boto3.client(
                 "bedrock-runtime",
@@ -80,7 +79,6 @@ class ChatGraph:
         self._load_stopwords()
         loop = asyncio.get_running_loop()
         
-        # 불용어 처리 로직은 여기에 그대로 적용
         pos_tagged = await loop.run_in_executor(None, self.okt.pos, text, True, True)
 
         keywords = [
@@ -213,7 +211,7 @@ class ChatGraph:
 
     
     # generate_llm_answer_node 정의
-    def generate_llm_answer_node(self, state: GraphState) -> dict:
+    async def generate_llm_answer_node(self, state: GraphState) -> dict:
         """[노드 5-B] LLM을 통해 답변을 생성합니다."""
         print("--- 노드 5-B: LLM 답변 생성 ---")
         prompt = f"""
@@ -223,12 +221,27 @@ class ChatGraph:
         사용자 질문: {state['user_question']}
         답변:
         """
+        
         try:
+            temperature = await self.company_repository.speech_level_find_by_company_id(state.get('company_id')) * 0.1
+            
             messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
-            body = json.dumps({"anthropic_version": "bedrock-2023-05-31", "max_tokens": 1024, "messages": messages})
+
+            body_data = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 1024,
+                "messages": messages,
+                "temperature": temperature
+            }
+            body = json.dumps(body_data)
+
             response = self.bedrock_runtime.invoke_model(
-                body=body, modelId=self.llm_model_id, accept="application/json", contentType="application/json",
-                guardrailIdentifier=settings.BEDROCK_GUARDRAIL_ID, guardrailVersion=settings.BEDROCK_GUARDRAIL_VERSION
+                body=body, 
+                modelId=self.llm_model_id, 
+                accept="application/json", 
+                contentType="application/json",
+                guardrailIdentifier=settings.BEDROCK_GUARDRAIL_ID, 
+                guardrailVersion=settings.BEDROCK_GUARDRAIL_VERSION
             )
             response_body = json.loads(response.get("body").read())
             answer = response_body['content'][0]['text']
