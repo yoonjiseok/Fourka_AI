@@ -88,7 +88,8 @@ class FeedbackService:
                 # 필요한 값 추출
                 user_id = user_info.result.userId
                 department = user_info.result.departmentName
-                print(f"✅ [API] 사용자 ID({user_id}), 부서({department}) 조회 성공")
+                company_id = user_info.result.companyId
+                print(f"✅ [API] 사용자 ID({user_id}), 회사ID({company_id}), 부서({department}) 조회 성공")
 
         except httpx.HTTPStatusError as http_err:
             print(f"[ERROR] HTTP 상태 코드 오류: {http_err}")
@@ -107,6 +108,7 @@ class FeedbackService:
                 {
                     "senderId": str(user_id),
                     "type": "FEEDBACK",
+                    "companyId": str(company_id),
                     "department": str(department),
                     "description": feedback.feedback_content or "",
                     "createdAt": datetime.utcnow().isoformat()
