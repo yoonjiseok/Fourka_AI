@@ -8,7 +8,8 @@ from config import settings
 from database.repository.chat_repository import ChatRepository
 from database.repository.company_repository import CompanyRepository
 from database.repository.keyword_repository import KeywordRepository
-from .chat_graph import ChatGraph  # 위에서 만든 클래스 import
+from .chat_graph import ChatGraph
+from database.models import ChatType
 
 # 채팅방별로 HIL 컨텍스트를 10분간 저장하는 캐시
 hil_context_cache = TTLCache(maxsize=1000, ttl=600)
@@ -54,7 +55,7 @@ class ChatService:
             del hil_context_cache[chat_room_id]
             
             # 저장된 컨텍스트와 사용자의 새 메시지로 직접 LLM 답변 생성
-            return await self._generate_answer_from_context(message, cached_context)
+            return await self._generate_answer_from_context(message, cached_context, chat_room_id, user_id)
 
         # --- 2. 일반적인 첫 질문 처리 ---
         initial_state = {
@@ -77,10 +78,10 @@ class ChatService:
         return chatDTO.ChatResponse(
             answer=final_state['final_answer'],
             metadata=final_state['final_metadata'],
-            chat_id=final_state['chat_id']
+            chat_id=final_state.get('chat_id')  # HIL 재질문의 경우 None일 수 있음
         )
 
-    async def _generate_answer_from_context(self, user_choice: str, context: list[dict]):
+    async def _generate_answer_from_context(self, user_choice: str, context: list[dict], chat_room_id: int, user_id: int):
         """HIL 재질문 답변을 처리하기 위한 별도 로직"""
         
         filtered_context = [
@@ -99,9 +100,21 @@ class ChatService:
         graph_instance = ChatGraph(self.chat_repository, self.company_repository, self.keyword_repository)
         response_dict = graph_instance.generate_llm_answer_node(state_for_generation)
 
+        # HIL 후속 답변은 chat 테이블에 저장
+        chunk_ids = [(item.get("doc_id"), item.get("chunk_id")) for item in filtered_context if item.get("doc_id") and item.get("chunk_id")]
+        chat_id = await self.chat_repository.save_chat(
+            question=user_choice,
+            chat_type=ChatType.DOC,
+            chat_room_id=chat_room_id,
+            user_id=user_id,
+            chunk_ids=chunk_ids,
+            faq_id=None
+        )
+
         return chatDTO.ChatResponse(
             answer=response_dict['final_answer'],
-            metadata=filtered_context
+            metadata=filtered_context,
+            chat_id=chat_id
         )
 
     async def send_small_chat(self, message: str, chat_room_id: int, user_id: int):
