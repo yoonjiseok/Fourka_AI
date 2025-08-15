@@ -224,8 +224,7 @@ class ChatGraph:
             response_body = json.loads(response.get("body").read())
             answer = response_body['content'][0]['text']
             
-            # 메타데이터 생성
-            metadata = [{"source": "Document", "title": chunk[4], "chunk_id": chunk[1]} for chunk in state['similar_chunks']]
+            metadata = [{"source": "Document", "title": chunk[4], "chunk_id": chunk[1], "doc_id": chunk[0]} for chunk in state['similar_chunks']]
         
             return {"final_answer": answer, "final_metadata": metadata, "keywords": state.get("keywords", [])}
         except Exception as e:
@@ -342,8 +341,8 @@ class ChatGraph:
             {"trigger_hil": "generate_hil_re_prompt", "generate_with_llm": "generate_llm_answer"}
         )
 
-        # 답변 생성 후, 채팅 저장 노드로 연결
-        workflow.add_edge("generate_hil_re_prompt", "save_chat")
+        # HIL 재질문은 저장하지 않고 바로 종료, LLM 답변만 저장
+        workflow.add_edge("generate_hil_re_prompt", END)  # HIL은 저장 안함
         workflow.add_edge("generate_llm_answer", "save_chat")
         
         # 채팅 저장 후, 키워드 저장 노드로 연결
