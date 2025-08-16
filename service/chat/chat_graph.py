@@ -44,17 +44,11 @@ class ChatGraph:
         self.chat_repository = chat_repository
         self.company_repository = company_repository
         self.keyword_repository = keyword_repository
-        
+        self.stopwords_path = stopwords_path
+        self.stopwords = None  # 파일을 로드하는 대신 None으로 초기화
+
         # Okt 분석기 초기화
         self.okt = Okt()
-
-        try:
-            with open(stopwords_path, 'r', encoding='utf-8') as f:
-                self.stopwords = set(f.read().splitlines())
-            print(f"불용어 사전 로드 완료: {len(self.stopwords)}개")
-        except FileNotFoundError:
-            self.stopwords = set()
-            print("경고: stopwords.txt 파일을 찾을 수 없어, 불용어 사전을 비운 상태로 시작합니다.")
 
         try:
             self.bedrock_runtime = boto3.client(
@@ -68,10 +62,23 @@ class ChatGraph:
         except Exception as e:
             raise RuntimeError(f"AWS Bedrock 클라이언트 초기화 실패: {e}")
         
+    def _load_stopwords(self):
+        """불용어 사전이 아직 로드되지 않았을 경우에만 파일을 로드합니다."""
+        if self.stopwords is not None:
+            return
+        
+        try:
+            with open(self.stopwords_path, 'r', encoding='utf-8') as f:
+                self.stopwords = set(f.read().splitlines())
+            print(f"지연 로딩: 불용어 사전 로드 완료 ({len(self.stopwords)}개)")
+        except FileNotFoundError:
+            self.stopwords = set()
+            print(f"경고: {self.stopwords_path} 파일을 찾을 수 없어, 불용어 사전을 비운 상태로 시작합니다.")
+                
     async def _extract_keywords_async(self, text: str) -> list:
+        self._load_stopwords()
         loop = asyncio.get_running_loop()
         
-        # 불용어 처리 로직은 여기에 그대로 적용
         pos_tagged = await loop.run_in_executor(None, self.okt.pos, text, True, True)
 
         keywords = [
@@ -204,7 +211,7 @@ class ChatGraph:
 
     
     # generate_llm_answer_node 정의
-    def generate_llm_answer_node(self, state: GraphState) -> dict:
+    async def generate_llm_answer_node(self, state: GraphState) -> dict:
         """[노드 5-B] LLM을 통해 답변을 생성합니다."""
         print("--- 노드 5-B: LLM 답변 생성 ---")
         prompt = f"""
@@ -214,12 +221,27 @@ class ChatGraph:
         사용자 질문: {state['user_question']}
         답변:
         """
+        
         try:
+            temperature = await self.company_repository.speech_level_find_by_company_id(state.get('company_id')) * 0.1
+            
             messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
-            body = json.dumps({"anthropic_version": "bedrock-2023-05-31", "max_tokens": 1024, "messages": messages})
+
+            body_data = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 1024,
+                "messages": messages,
+                "temperature": temperature
+            }
+            body = json.dumps(body_data)
+
             response = self.bedrock_runtime.invoke_model(
-                body=body, modelId=self.llm_model_id, accept="application/json", contentType="application/json",
-                guardrailIdentifier=settings.BEDROCK_GUARDRAIL_ID, guardrailVersion=settings.BEDROCK_GUARDRAIL_VERSION
+                body=body, 
+                modelId=self.llm_model_id, 
+                accept="application/json", 
+                contentType="application/json",
+                guardrailIdentifier=settings.BEDROCK_GUARDRAIL_ID, 
+                guardrailVersion=settings.BEDROCK_GUARDRAIL_VERSION
             )
             response_body = json.loads(response.get("body").read())
             answer = response_body['content'][0]['text']
