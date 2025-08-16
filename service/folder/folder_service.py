@@ -1,13 +1,17 @@
-from typing import List, Optional
+from typing import List
 
-from database.repository.folder_repository import FolderRepository
 from database.models import Folder
+from database.repository import document_repository
+from database.repository.document_repository import DocumentRepository
+from database.repository.folder_repository import FolderRepository
 from exception.models.exception import FolderException
+from utils import s3_utils
 
 
 class FolderService:
-    def __init__(self, folder_repository: FolderRepository):
+    def __init__(self, folder_repository: FolderRepository, document_repository: DocumentRepository):
         self.folder_repository = folder_repository
+        self.document_repository = document_repository
 
     async def create_folder(self, name: str, company_id: int) -> Folder:
         """
@@ -104,6 +108,23 @@ class FolderService:
                 reason=f"해당 폴더에 대한 삭제 권한이 없습니다.",
                 field="folder_id"
             )
+
+        # S3의 파일 삭제
+        folder_objects = await self.document_repository.get_all_versions_by_folder_id(folder_id=folder_id)
+        folder_url = []
+        s3_delete_results = []
+        for folder_object in folder_objects:
+            folder_url.append(folder_object.url)
+        for url in folder_url:
+            success_for_s3_delete = s3_utils.delete_file_from_s3(url)
+            s3_delete_results.append(success_for_s3_delete)
+        if not all(s3_delete_results):
+            raise FolderException(
+                status_code=500,
+                message="폴더의 파일 삭제 중 오류가 발생했습니다.",
+                reason="폴더 파일의 일부 문서를 삭제하는 중 오류가 발생했습니다. DB에서 해당 파일이 삭제되지 않습니다."
+            )
+
 
         # 소유권이 확인되었을 때만 Repository의 삭제 함수 호출
         success = await self.folder_repository.delete_folder(folder_id, company_id)

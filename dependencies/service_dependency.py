@@ -36,12 +36,6 @@ def get_faq_service(db_session: AsyncSession = Depends(get_db)) -> FAQService:
 def get_tag_service(tag_repo: TagRepository = Depends(get_tag_repository)) -> TagService:
     return TagService(tag_repo)
 
-def get_chat_service(db: AsyncSession = Depends(get_db)):
-    chat_repo = ChatRepository(db)
-    company_repo = CompanyRepository(db) 
-    return ChatService(chat_repository=chat_repo, company_repository=company_repo)
-
-
 def get_feedback_service(
     feedback_repo: FeedbackRepository = Depends(get_feedback_repository),
     chunk_repo: ChunkRepository = Depends(get_chunk_repository),
@@ -49,8 +43,8 @@ def get_feedback_service(
 ) -> FeedbackService:
     return FeedbackService(feedback_repo, chunk_repo, chat_repo)
 
-def get_folder_service(repo: FolderRepository = Depends(get_folder_repository)) -> FolderService:
-    return FolderService(repo)
+def get_folder_service(folder_repo: FolderRepository = Depends(get_folder_repository),docu_repo: DocumentRepository = Depends(get_document_repository)) -> FolderService:
+    return FolderService(folder_repository=folder_repo, document_repository=docu_repo)
 
 def get_chat_service(db: AsyncSession = Depends(get_db)):
     chat_repo = ChatRepository(db)

@@ -111,3 +111,33 @@ def extract_text_from_pdf(pdf_stream: io.BytesIO) -> str:
     except Exception as e:
         print(f"PDF 처리 중 오류 발생: {e}")
         return ""
+
+
+def delete_file_from_s3(url: str) -> bool:
+    """
+    S3 URL을 사용하여 파일을 삭제합니다.
+    :param url: S3 파일의 전체 URL
+    :return: 삭제 성공 시 True, 실패 시 False
+    """
+    bucket_name = settings.S3_BUCKET_NAME
+    # 기존 URL 파싱 함수를 재사용하여 객체 키를 가져옵니다.
+    object_key = get_key_from_url(url)
+
+    print(f"S3에서 파일 삭제를 시작합니다: bucket='{bucket_name}', key='{object_key}'")
+
+    try:
+        # S3 객체(파일) 삭제를 요청합니다.
+        s3_client.delete_object(Bucket=bucket_name, Key=object_key)
+        print(f"삭제 성공: '{object_key}' 파일이 S3 버킷에서 삭제되었습니다.")
+        return True
+    except NoCredentialsError:
+        print("S3 인증 정보를 찾을 수 없습니다.")
+        return False
+    except ClientError as e:
+        # ClientError는 다양한 S3 관련 오류를 포함합니다 (예: 권한 없음).
+        error_code = e.response.get("Error", {}).get("Code")
+        print(f"S3 클라이언트 오류 발생: {error_code} - {e}")
+        return False
+    except Exception as e:
+        print(f"파일 삭제 중 알 수 없는 오류 발생: {e}")
+        return False
