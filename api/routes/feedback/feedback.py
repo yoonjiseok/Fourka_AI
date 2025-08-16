@@ -14,6 +14,7 @@ from model.response_models import SuccessResponse
 from service.feedback.feedback_service import FeedbackService
 from database.models import Feedback
 from sqlalchemy.ext.asyncio import AsyncSession
+from config import settings
 from utils.db import get_db
 from datetime import date
 
@@ -38,7 +39,7 @@ async def create_feedback(
             answer=feedback_dto.answer
         )
         
-        full_token_string = f"Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpczM1NjVAZ2FjaG9uLmFjLmtyIiwidXNlcl9pZCI6OCwicm9sZSI6IkFETUlOIiwiY29tcGFueV9pZCI6MywiaWF0IjoxNzU1MDc3NTk5LCJleHAiOjE3NTc2Njk1OTl9.xduC0yOJ-SPUZbjknBl0O_xFf030bNB6lAZpEwRVN6oOsiz-ROGVp0aEDj-uJZTUzCQiMfP1BkOcE3I7tVL4bg"
+        full_token_string = f"Bearer {settings.FEEDBACK_TEST_TOKEN}"
         created_feedback = await feedback_service.create_feedback(
             feedback, 
             authorization=full_token_string)

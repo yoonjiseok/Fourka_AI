@@ -50,7 +50,8 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
 
-    USER_API_URL: str  # 기본값 설정
+    FEEDBACK_TEST_TOKEN: str
+    USER_API_URL: str
 
 
 
