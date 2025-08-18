@@ -1,16 +1,39 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
-from typing import Optional
 
 # 폴더 생성을 위한 DTO
 class FolderCreateDTO(BaseModel):
-    name: str  # 폴더 이름
+    name: str = Field(
+        ...,
+        min_length=1,
+        description="폴더 이름 (공백일 수 없음)"
+    )
     company_id: int # 회사의 ID
+
+    @field_validator('name')
+    @classmethod
+    def name_must_not_be_blank(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError('폴더 이름은 공백일 수 없습니다.')
+        return v
 
 # 폴더 이름 수정을 위한 DTO
 class FolderUpdateDTO(BaseModel):
     folder_id: int # 수정할 폴더의 ID
-    name: str      # 새로운 폴더 이름
+    name: str = Field(
+        ...,
+        min_length=1,
+        description="새로운 폴더 이름(공백일 수 없음)"
+    )
+
+    @field_validator('name')
+    @classmethod
+    def name_must_not_be_blank(cls, v):
+        v = v.strip()
+        if not v:
+            raise ValueError('폴더 이름은 공백일 수 없습니다.')
+        return v
 
 # 폴더 삭제를 위한 DTO
 class FolderDeleteDTO(BaseModel):
