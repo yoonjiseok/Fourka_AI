@@ -53,6 +53,8 @@ data:
   S3_PROJECT_ID: "f69598a574dc4a76a6711bb4ea074d67"
 
   USER_API_URL: "http://user-service.user.svc.cluster.local:80"
+  FEEDBACK_TEST_TOKEN: "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpczM1NjVAZ2FjaG9uLmFjLmtyIiwidXNlcl9pZCI6OCwicm9sZSI6IkFETUlOIiwiY29tcGFueV9pZCI6MywiaWF0IjoxNzU1MDc3NTk5LCJleHAiOjE3NTc2Njk1OTl9.xduC0yOJ-SPUZbjknBl0O_xFf030bNB6lAZpEwRVN6oOsiz-ROGVp0aEDj-uJZTUzCQiMfP1BkOcE3I7tVL4bg"
+
 
 ---
 # 2. Deployment: user-service 애플리케이션을 배포하고 관리합니다.
@@ -74,7 +76,7 @@ spec:
     spec:
       containers:
         - name: ai-container
-          image: pbl6-04.kr-central-2.kcr.dev/fourka/fourka-ai:develop-36
+          image: pbl6-04.kr-central-2.kcr.dev/fourka/fourka-ai:develop-38
           ports:
             - containerPort: 8000 # 애플리케이션이 사용하는 포트
           envFrom:
