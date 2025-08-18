@@ -53,10 +53,12 @@ class BedrockEmbeddingFunction(EmbeddingFunction):
         return embeddings
 
 class ChromaFAQService:
-    def __init__(self, path: str = "./chroma_db"):
-        self.client = chromadb.PersistentClient(path=path)
+    def __init__(self):
         
         try:
+            host, port = settings.CHROMA_DB_URL.split(":")
+            self.client = chromadb.HttpClient(host=host, port=int(port))
+            print(f"Connected to ChromaDB at {settings.CHROMA_DB_URL}")
             # Bedrock 클라이언트 초기화
             bedrock_runtime = boto3.client(
                 service_name="bedrock-runtime",
@@ -67,6 +69,10 @@ class ChromaFAQService:
         except Exception as e:
             print(f"Error initializing AWS Bedrock client: {e}")
             raise AIException(message="Failed to initialize AWS Bedrock client.")
+        
+        except Exception as e:
+            print(f"Error connecting to ChromaDB: {e}")
+            raise AIException(message="Failed to connect to ChromaDB server.")
 
         # 위에서 정의한 커스텀 클래스의 인스턴스 생성
         bedrock_ef = BedrockEmbeddingFunction(
@@ -82,7 +88,7 @@ class ChromaFAQService:
         
         print("ChromaDB FAQ Service Initialized with AWS Bedrock Titan Embedding Model.")
 
-
+        
     def upsert_faq(self, faq_id: int, question: str, answer: str, company_id: int, tag_id: int):
         """FAQ를 ChromaDB에 추가하거나 업데이트합니다. (Upsert)"""
         try:

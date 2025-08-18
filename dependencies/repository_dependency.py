@@ -40,3 +40,4 @@ def get_folder_repository(db: AsyncSession = Depends(get_db)) -> FolderRepositor
 def get_redis_service() -> RedisService:
     """RedisService 인스턴스를 생성하는 의존성 함수"""
     return RedisService(redis_client=redis_client)
+

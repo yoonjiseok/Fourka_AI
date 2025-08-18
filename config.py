@@ -53,6 +53,8 @@ class Settings(BaseSettings):
     FEEDBACK_TEST_TOKEN: str
     USER_API_URL: str
 
+    CHROMA_DB_URL: str
+
 
 
 settings = Settings()
