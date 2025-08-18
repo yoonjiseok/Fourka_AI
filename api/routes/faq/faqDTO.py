@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 # FAQ 관련 DTO
@@ -32,7 +32,7 @@ class FAQResponseDTO(BaseModel):
 
 # Tag 관련 DTO
 class TagCreateDTO(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, description="태그 이름은 비워둘 수 없습니다.")
     company_id: int
 
 
