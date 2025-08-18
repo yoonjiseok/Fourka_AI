@@ -74,7 +74,7 @@ spec:
     spec:
       containers:
         - name: ai-container
-          image: msj9965/fourkachip-ai:0.2.6
+          image: pbl6-04.kr-central-2.kcr.dev/fourka/fourka-ai:develop-36
           ports:
             - containerPort: 8000 # 애플리케이션이 사용하는 포트
           envFrom:
