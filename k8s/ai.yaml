@@ -55,7 +55,7 @@ data:
   USER_API_URL: "http://user-service.user.svc.cluster.local:80"
   FEEDBACK_TEST_TOKEN: "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjaHJpczM1NjVAZ2FjaG9uLmFjLmtyIiwidXNlcl9pZCI6OCwicm9sZSI6IkFETUlOIiwiY29tcGFueV9pZCI6MywiaWF0IjoxNzU1MDc3NTk5LCJleHAiOjE3NTc2Njk1OTl9.xduC0yOJ-SPUZbjknBl0O_xFf030bNB6lAZpEwRVN6oOsiz-ROGVp0aEDj-uJZTUzCQiMfP1BkOcE3I7tVL4bg"
 
-  CHROMA_DB_URL: "http://chromadb.ai.svc.cluster.local:8000"
+  CHROMA_DB_URL: "chromadb.ai.svc.cluster.local:8000"
 
 ---
 # 2. Deployment: user-service 애플리케이션을 배포하고 관리합니다.
