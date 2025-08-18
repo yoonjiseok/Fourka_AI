@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Depends, Form, BackgroundTasks, Path
 from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 
 from api.routes.document import documentDTO
 from dependencies.auth_dependency import get_current_user
@@ -17,6 +18,8 @@ async def update_pdf(
         current_user: dict = Depends(get_current_user),
         document_service: DocumentService = Depends(get_document_service),
 ):
+    if len(documentDTO.title) == 0:
+        raise RequestValidationError(errors=[{"loc": ["body", "missing_field"], "msg": "필수 필드가 누락되었습니다."}])
     await document_service.update_file_name(
         file_id=documentDTO.doc_id,
         title=documentDTO.title
@@ -41,6 +44,8 @@ async def upload_pdf(
     file: UploadFile = File(...)
 ):
     print(f"[API_ROUTE] Starting PDF upload endpoint for file: {file.filename}")
+    if(len(title) == 0) | (len(version) == 0) | (len(commit_message) == 0):
+        raise RequestValidationError(errors=[{"loc": ["body", "missing_field"], "msg": "필수 필드가 누락되었습니다."}])
     
     doc_id, doc_title, doc_version, doc_created_at, save_path = await document_service.upload_pdf(
         file=file,
