@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPBearer
 
 from api.routes.faq.faqDTO import TagCreateDTO
@@ -19,6 +20,8 @@ async def upload_tag(
 ):
     """태그 등록"""
     try:
+        if len(tag_dto.title) == 0:
+            raise RequestValidationError(errors=[{"loc": ["body", "missing_field"], "msg": "필수 필드가 누락되었습니다."}])
         tag = await tag_service.create_tag(
             name=tag_dto.name,
             company_id=tag_dto.company_id
