@@ -13,14 +13,13 @@ metadata:
   name: ai-config
   namespace: ai
 data:
-
   # .env 파일 내용
-  DB_URL: "postgresql+asyncpg://vectoruser:pgvectorpassword@pgvector-service.database:5432/ai_fastapi_db"
-  FOURKA_DB_HOST: "pgvector-service.database"
+  DB_URL: "postgresql+asyncpg://postgres:postgressuperuser@pgbouncer-rw.databasecluster:5432/ai_db"
+  FOURKA_DB_HOST: "pgbouncer-rw.databasecluster"
   FOURKA_DB_PORT: "5432"
-  FOURKA_DB_NAME: "ai_fastapi_db"
-  FOURKA_DB_USER: "vectoruser"
-  FOURKA_DB_PASSWORD: "pgvectorpassword"
+  FOURKA_DB_NAME: "ai_db"
+  FOURKA_DB_USER: "postgres"
+  FOURKA_DB_PASSWORD: "postgressuperuser"
 
   # API Key 및 시크릿
   JWT_SECRET: "Zm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNoaXBmb3Vya2FjaGlwZm91cmthY2hpcGZvdXJrYWNo"

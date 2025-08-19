@@ -12,9 +12,9 @@ from airflow import DAG
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.operators.python import PythonOperator
-from airflow.operators.email import EmailOperator
-from airflow.kubernetes.secret import Secret
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+#from airflow.operators.email import EmailOperator
+#from airflow.kubernetes.secret import Secret
+#from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 
 # DAG 기본 설정
 default_args = {
@@ -33,7 +33,7 @@ dag = DAG(
     'chunk_weight_decay',
     default_args=default_args,
     description='주간 Chunk 가중치 Decay 작업',
-    schedule_interval='0 2 * * 0',  # 매주 일요일 2AM (cron 표현식)
+    schedule_interval='0 17 * * 6',  # 매주 일요일 2AM (cron 표현식) (KST 02:00 == UTC 토 17:00)
     catchup=False,  # 과거 실행 건너뛰기
     max_active_runs=1,  # 동시 실행 방지
     tags=['chunk', 'data-pipeline', 'weekly']
