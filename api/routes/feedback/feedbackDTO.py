@@ -20,8 +20,8 @@ class UserDetailResponseDto(BaseModel):
     position: Optional[str]
     role: str
     companyId: int
-    departmentId: int
-    departmentName: str
+    departmentId: Optional[int]
+    departmentName: Optional[str]
     companyName: str
 
 class UserInfoResponse(BaseModel):
