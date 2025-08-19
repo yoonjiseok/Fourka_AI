@@ -28,12 +28,8 @@ data:
   AIRFLOW__SCHEDULER__MAX_TIS_PER_QUERY: "1"
   AIRFLOW__WEBSERVER__WEB_SERVER_HOST: "0.0.0.0"
   AIRFLOW__WEBSERVER__WEB_SERVER_PORT: "8080"
-  #AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://vectoruser:pgvectorpassword@pgvector-service.database:5432/airflow_metadata"
-  #AIRFLOW_CONN_FOURKA_DB: "postgresql://vectoruser:pgvectorpassword@pgvector-service.database:5432/ai_fastapi_db"
-  # Airflow 메타데이터 DB (세션 풀 권장: PgBouncer-RW 또는 HAProxy 5432)
-  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://postgres:postgressuperuser@pgbouncer-rw.databasecluster.svc.cluster.local:5432/airflow_metadata
-  # DAG에서 쓰는 fourka_db 연결 (업데이트/로그 적재 등 쓰기 포함 → RW)
-  AIRFLOW_CONN_FOURKA_DB: "postgresql://postgres:postgressuperuser@pgbouncer-rw.databasecluster.svc.cluster.local:5432/ai_db
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://postgres:postgressuperuser@pgbouncer-rw.databasecluster.svc.cluster.local:5432/airflow_metadata"
+  AIRFLOW_CONN_FOURKA_DB: "postgresql://postgres:postgressuperuser@pgbouncer-rw.databasecluster.svc.cluster.local:5432/ai_db"
 ---
 #--------
 apiVersion: batch/v1
