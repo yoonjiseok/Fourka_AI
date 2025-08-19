@@ -3,6 +3,8 @@ import json
 from konlpy.tag import Okt
 from typing import TypedDict, List, Any, Optional
 import asyncio
+import httpx  # 외부 API 호출을 위해 추가
+
 # LangGraph 및 의존성 import
 from langgraph.graph import StateGraph, END
 from config import settings
@@ -22,6 +24,7 @@ class GraphState(TypedDict):
     company_id: int
     chat_room_id: int
     user_id: int
+    auth_token: Optional[str]  # API 호출을 위한 토큰 추가
 
     # 중간 결과
     is_faq_found: bool
@@ -45,10 +48,12 @@ class ChatGraph:
         self.company_repository = company_repository
         self.keyword_repository = keyword_repository
         self.stopwords_path = stopwords_path
-        self.stopwords = None  # 파일을 로드하는 대신 None으로 초기화
+        self.stopwords = None
 
-        # Okt 분석기 초기화
         self.okt = Okt()
+        
+        # HTTP 클라이언트 초기화
+        self.client = httpx.AsyncClient()
 
         try:
             self.bedrock_runtime = boto3.client(
@@ -61,6 +66,32 @@ class ChatGraph:
             self.llm_model_id = settings.BEDROCK_LLM_MODEL_ID
         except Exception as e:
             raise RuntimeError(f"AWS Bedrock 클라이언트 초기화 실패: {e}")
+            
+    async def _get_company_levels(self, company_id: int, token: str) -> dict:
+
+        if not token:
+            # 토큰이 없는 경우 기본값 반환 또는 에러 처리
+            return {"think_level": 0.7, "speech_level": 0.5}
+
+        headers = {"Authorization": f"Bearer {token}"}
+        try:
+            response = await self.client.get(
+                f"{settings.USER_API_URL}/api/users/companies/levels",
+                headers=headers
+            )
+            response.raise_for_status()
+            data = response.json()
+            return {
+                "think_level": data.get("think_level"),
+                "speech_level": data.get("speech_level")
+            }
+        except httpx.HTTPStatusError as e:
+            print(f"API 호출 오류: {e}")
+
+        except Exception as e:
+            print(f"API 처리 중 예외 발생: {e}")
+
+
         
     def _load_stopwords(self):
         """불용어 사전이 아직 로드되지 않았을 경우에만 파일을 로드합니다."""
@@ -184,8 +215,11 @@ class ChatGraph:
     async def hil_check_node(self, state: GraphState) -> dict:
         """[노드 3] HIL 실행 여부를 결정합니다."""
         print("--- 노드 3: HIL 실행 여부 확인 ---")
-        company = await self.company_repository.find_by_company_id(state['company_id'])
-        threshold = (company.think_level * 0.1) if company else 0.7
+        
+        # 외부 API를 통해 company level 정보 가져오기
+        levels = await self._get_company_levels(state['company_id'], state.get('auth_token'))
+        threshold = levels['think_level'] * 0.1
+        
         is_hil_triggered = True
         for chunk in state['similar_chunks']:
             if chunk[5] >= threshold:
@@ -232,7 +266,9 @@ class ChatGraph:
         """
         
         try:
-            temperature = await self.company_repository.speech_level_find_by_company_id(state.get('company_id')) * 0.1
+            # 외부 API를 통해 company level 정보 가져오기
+            levels = await self._get_company_levels(state['company_id'], state.get('auth_token'))
+            temperature = levels['speech_level'] * 0.1
             
             messages = [{"role": "user", "content": [{"type": "text", "text": prompt}]}]
 
@@ -266,7 +302,6 @@ class ChatGraph:
         """[수정된 노드] 최종 답변을 Chat 테이블에 저장하고 chat_id를 얻습니다."""
         print("--- 채팅 내용 저장 ---")
 
-        # [로직 수정] FAQ에서 답변을 찾았으면 FAQ 타입, 아니면 일반 DOC 타입으로 지정
         if state.get("is_faq_found", False):
             chat_type = ChatType.FAQ
         else:
@@ -274,7 +309,6 @@ class ChatGraph:
         
         faq_id = None
         chunk_ids = []
-        # FAQ 답변이 아닐 경우(RAG를 거친 경우)에만 (doc_id, chunk_id)를 저장
         if not state.get("is_faq_found", False):
              chunk_ids=[(item.get("doc_id"), item.get("chunk_id")) for item in state.get("final_metadata", []) if item.get("source") == "Document" and item.get("doc_id") and item.get("chunk_id")]
         else:
@@ -298,7 +332,6 @@ class ChatGraph:
         """추출된 키워드를 데이터베이스에 저장합니다."""
         print("--- 최종 노드: 키워드 저장 ---")
         
-        # 디버깅을 위해 현재 state의 값을 확인합니다.
         chat_id = state.get("chat_id")
         keywords = state.get("keywords", [])
         print(f"DEBUG (save_keywords_node): chat_id={chat_id}, keywords={keywords}")
@@ -334,7 +367,6 @@ class ChatGraph:
     def decide_rag_or_end(self, state: GraphState) -> str:
         """[엣지 1] FAQ 검색 결과에 따라 다음 단계를 결정합니다."""
         print("--- 엣지 1: FAQ 결과 분기 ---")
-        # FAQ 답변을 찾았으면 'save_chat'으로 바로 가서 저장 후 종료
         return "save_chat" if state['is_faq_found'] else "continue_to_rag"
 
     def decide_hil_or_generate(self, state: GraphState) -> str:
@@ -372,14 +404,11 @@ class ChatGraph:
             {"trigger_hil": "generate_hil_re_prompt", "generate_with_llm": "generate_llm_answer"}
         )
 
-        # HIL 재질문은 저장하지 않고 바로 종료, LLM 답변만 저장
-        workflow.add_edge("generate_hil_re_prompt", END)  # HIL은 저장 안함
+        workflow.add_edge("generate_hil_re_prompt", END)
         workflow.add_edge("generate_llm_answer", "save_chat")
         
-        # 채팅 저장 후, 키워드 저장 노드로 연결
         workflow.add_edge("save_chat", "save_keywords")
         
-        # 키워드 저장 후 최종 종료
         workflow.add_edge("save_keywords", END)
 
         return workflow.compile()

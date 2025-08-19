@@ -164,8 +164,12 @@ async def get_feedback_ratio(
     try:
         # 날짜 형식 검증
         from datetime import datetime
-        datetime.strptime(start_date, "%Y-%m-%d")
-        datetime.strptime(end_date, "%Y-%m-%d")
+        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+        
+        # 날짜 순서 검증: start_date가 end_date보다 늦으면 안됨
+        if start_date_obj > end_date_obj:
+            raise HTTPException(status_code=400, detail="시작 날짜는 종료 날짜보다 늦을 수 없습니다.")
         
         result = await feedback_service.get_feedback_ratio(current_user.get("company_id"), start_date, end_date)
         return SuccessResponse(
@@ -174,6 +178,8 @@ async def get_feedback_ratio(
             message="피드백 비율이 성공적으로 조회되었습니다.",
             code=200
         )
+    except HTTPException:
+        raise  # HTTPException은 그대로 전달
     except ValueError:
         raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. YYYY-MM-DD 형식으로 입력해주세요.")
     except Exception as e:
@@ -223,22 +229,44 @@ async def get_top_keywords(
     """
     선택된 기간 내에 가장 많이 호출된 Top 10 키워드와 각 키워드의 호출 수를 반환합니다.
     """
-    keyword_repo = KeywordRepository(db)
-    keyword_service = KeywordService(keyword_repo)
-    
-    top_keywords = await keyword_service.get_top_keywords(
-        company_id=current_user.get("company_id"), start_date=start_date, end_date=end_date
-    )
-    return top_keywords
+    try:
+        # 날짜 순서 검증: start_date가 end_date보다 늦으면 안됨
+        if start_date > end_date:
+            raise HTTPException(status_code=400, detail="시작 날짜는 종료 날짜보다 늦을 수 없습니다.")
+        
+        keyword_repo = KeywordRepository(db)
+        keyword_service = KeywordService(keyword_repo)
+        
+        top_keywords = await keyword_service.get_top_keywords(
+            company_id=current_user.get("company_id"), start_date=start_date, end_date=end_date
+        )
+        return top_keywords
+    except HTTPException:
+        raise  # 이미 HTTPException인 경우 그대로 전달
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"키워드 조회 중 오류가 발생했습니다: {str(e)}")
 
 @feedback_router.get("/reason-stats", response_model=SuccessResponse)
 async def get_feedback_reason_statistics(
-    start_date: str = Query(None, description="시작 날짜 (YYYY-MM-DD)", regex=r'^\d{4}-\d{2}-\d{2}$'),
-    end_date: str = Query(None, description="종료 날짜 (YYYY-MM-DD)", regex=r'^\d{4}-\d{2}-\d{2}$'),
+    start_date: str = Query(..., description="시작 날짜 (YYYY-MM-DD)", regex=r'^\d{4}-\d{2}-\d{2}$'),
+    end_date: str = Query(..., description="종료 날짜 (YYYY-MM-DD)", regex=r'^\d{4}-\d{2}-\d{2}$'),
     current_user: dict = Depends(get_current_user),
     feedback_service: FeedbackService = Depends(get_feedback_service)):
         """회사별 피드백 사유 통계를 조회합니다."""    
         try: 
+            # 날짜 필수 입력 검증 (Query에서 ...로 이미 설정됨)
+            if not start_date or not end_date:
+                raise HTTPException(status_code=400, detail="시작 날짜와 종료 날짜는 필수 입력 항목입니다.")
+            
+            # 날짜 형식 및 순서 검증
+            from datetime import datetime
+            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+            
+            # 날짜 순서 검증: start_date가 end_date보다 늦으면 안됨
+            if start_date_obj > end_date_obj:
+                raise HTTPException(status_code=400, detail="시작 날짜는 종료 날짜보다 늦을 수 없습니다.")
+            
             company_id = current_user.get("company_id")                
             # 피드백 사유 통계 조회        
             stats = await feedback_service.get_feedback_reason_stats(company_id, start_date, end_date)                
@@ -252,5 +280,7 @@ async def get_feedback_reason_statistics(
             raise HTTPException(status_code=401, detail="JWT 토큰에 company_id가 포함되어 있지 않습니다.")    
         except ValueError:        
             raise HTTPException(status_code=400, detail="날짜 형식이 올바르지 않습니다. YYYY-MM-DD 형식으로 입력해주세요.")    
+        except HTTPException:
+            raise  # 이미 HTTPException인 경우 그대로 전달
         except Exception as e:        
             raise HTTPException(status_code=500, detail=f"피드백 사유 통계 조회 중 오류가 발생했습니다: {str(e)}")
