@@ -95,7 +95,7 @@ class ChatGraph:
     async def _faq_search_logic_async(self, user_question: str, company_id: int):
         """기존 faq_search_node의 로직을 비동기 헬퍼 함수로 분리"""
         loop = asyncio.get_running_loop()
-        FAQ_SIMILARITY_THRESHOLD = 0.6
+        FAQ_SIMILARITY_THRESHOLD = 0.8
         
         faq_results = await loop.run_in_executor(
             None,
