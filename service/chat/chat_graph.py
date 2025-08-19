@@ -162,11 +162,20 @@ class ChatGraph:
 
     # rag_retrieve_node 정의
     async def rag_retrieve_node(self, state: GraphState) -> dict:
-        """[노드 2] RAG를 위한 문서 청크를 검색합니다."""
-        print("--- 노드 2: RAG 문서 검색 ---")
-        search_query = state["user_question"] + " " + " ".join(state.get("keywords", []))
+        """[노드 2 - 수정] 하이브리드 검색을 사용하여 RAG를 위한 문서 청크를 검색합니다."""
+        print("--- 노드 2: RAG 문서 검색 (하이브리드) ---")
+        user_question = state["user_question"]
+        search_query = user_question + " " + " ".join(state.get("keywords", []))
         embedding = self._text_to_embedding(search_query)
-        similar_chunks = await self.chat_repository.find_similar_chunks(embedding=embedding, company_id=state["company_id"])
+        
+        # 수정된 find_similar_chunks 호출
+        similar_chunks = await self.chat_repository.find_similar_chunks(
+            embedding=embedding, 
+            company_id=state["company_id"],
+            search_query=search_query, # 키워드 검색을 위한 쿼리 전달
+            top_k=5 
+        )
+        
         context_list = [{"doc_id": c[0], "chunk_id": c[1], "content": c[2], "page_number": c[3], "title": c[4]} for c in similar_chunks]
         
         return {"similar_chunks": similar_chunks, "context_list": context_list, "keywords": state.get("keywords", [])}
