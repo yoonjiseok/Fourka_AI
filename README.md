@@ -9,7 +9,6 @@
 <img width="160px" src="https://github.com/yoonjiseok.png"/> | <img width="160px" src="https://github.com/G9bonwook.png"/> | <img width="160px" src="https://github.com/dukesugar.png"/> |  <img width="160px" src="https://github.com/KwonHalim.png"/> |
 |:-----:|:-----:|:-----:|:-----:|
 |팀장 👨🏻‍💻|팀원 👨🏻‍💻|팀원 👨🏻‍💻|팀원 👨🏻‍💻|
-|윤씨 최고의 아웃풋|본 욱하지마!|이재모 피자보다 유명한<br/> 사람이 되겠습니다!|어?! 금지|
 |[윤지석](https://github.com/yoonjiseok)|[구본욱](https://github.com/G9bonwook)|[이재모](https://github.com/dukesugar)|[권하림](https://github.com/KwonHalim)|
 
 </div>
