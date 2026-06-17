@@ -1,15 +1,24 @@
 # config.py
-from pydantic import MySQLDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class AppSettings(BaseSettings):
+class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
-    DEBUG: bool = True
-    OPENAPI_URL: str | None = "/openapi.json" if DEBUG else None
-    API_PREFIX: str = "/api"
-    TIMEZONE_LOCATION: str = "Asia/Seoul"
-    DB_URL : str
+    
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION_NAME: str
+    BEDROCK_EMBEDDING_MODEL_ID: str
+    BEDROCK_LLM_MODEL_ID: str
 
-    AWS_ACCESS_KEY_ID: str #.env파일에서 호출
-    AWS_SECRET_ACCESS_KEY: str #.env파일에서 호출
+    GEMINI_API_KEY: str  # Gemini API 키
+    API_PREFIX: str
+
+
+    # --- 기존 변수들 ---
+    DEBUG: bool = True
+    TIMEZONE_LOCATION: str = "Asia/Seoul"
+    DB_URL: str
+    JWT_SECRET: str  # JWT 검증용 시크릿키
+
+settings = Settings()

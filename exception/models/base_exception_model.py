@@ -1,7 +1,8 @@
-from typing import Optional
 from pydantic import BaseModel, Field
+from typing import Optional
 
 from model.response_models import BaseResponse
+
 
 class ErrorDetail(BaseModel):
     field: Optional[str] = Field(None, description="오류가 발생한 필드 (선택 사항)")

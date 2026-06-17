@@ -18,6 +18,20 @@
 ![vscode](https://img.shields.io/badge/VSCode-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)
 
 ## 🥞 Stacks 🥞
+| Name         | Description                                 |
+| ------------ |---------------------------------------------|
+| <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white"> | Python 기반의 고성능 비동기 웹 프레임워크로, 빠른 개발과 자동 문서화를 지원. |
+| <img src="https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white"> | 작업 관리 및 문서화를 위한 통합 협업 도구.                   |
+
+
+## 💻 Convention 💻
+## 🌲 Branch Convention 🌲
+## 🧑‍💻 Code Convention 🧑‍💻
+## 💬 Issue Convention 💬
+## 🫷 PR Convention 🫸
+## 🙏 Commit Convention 🙏
+## 📁 Foldering Convention 📁
+=======
 | Name         | Description                                                 |
 | ------------ |-------------------------------------------------------------|
 | <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white"> | Python 기반의 고성능 비동기 웹 프레임워크로, 빠른 개발과 자동 문서화를 지원. |
@@ -95,4 +109,3 @@ ex) [feat] 규칙 뷰 구현
 
 ## 3. 해결 방안 
 1. [ ] solution
-

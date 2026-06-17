@@ -31,6 +31,7 @@ env/
 ENV/
 .venv/
 .env/
+fourkachip/
 
 # IDE
 .idea/
@@ -67,3 +68,9 @@ dmypy.json
 
 # pytest
 .pytest_cache/
+
+# 임시 파일 저장소
+/temp_file_storage/
+
+# 로컬 벡터 데이터베이스
+/chroma_db/
