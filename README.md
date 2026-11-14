@@ -2,14 +2,6 @@
 
 # FourKa-AI
 
-### KEA 6th - FourKa AI 레포지토리
-#### [노션 링크]()
-
-## AI Members
-<img width="160px" src="https://github.com/yoonjiseok.png"/> | <img width="160px" src="https://github.com/G9bonwook.png"/> | <img width="160px" src="https://github.com/dukesugar.png"/> |  <img width="160px" src="https://github.com/KwonHalim.png"/> |
-|:-----:|:-----:|:-----:|:-----:|
-|팀장 👨🏻‍💻|팀원 👨🏻‍💻|팀원 👨🏻‍💻|팀원 👨🏻‍💻|
-|[윤지석](https://github.com/yoonjiseok)|[구본욱](https://github.com/G9bonwook)|[이재모](https://github.com/dukesugar)|[권하림](https://github.com/KwonHalim)|
 
 </div>
 <br/>
@@ -24,6 +16,13 @@
 | <img src="https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white"> | 작업 관리 및 문서화를 위한 통합 협업 도구.                    |
 
 ---
+
+<img width="3366" height="1218" alt="image" src="https://github.com/user-attachments/assets/8fd08d9d-6c71-456c-b051-bd00001995cb" />
+
+<img width="2020" height="2258" alt="image" src="https://github.com/user-attachments/assets/2241c0ba-5770-4e81-a93e-cc441a324d32" />
+
+
+
 
 ## 💻 Convention 💻
 
