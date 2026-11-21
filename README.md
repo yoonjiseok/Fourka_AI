@@ -16,10 +16,13 @@
 | <img src="https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white"> | 작업 관리 및 문서화를 위한 통합 협업 도구.                    |
 
 ---
-
+# 실행 화면
 <img width="3366" height="1218" alt="image" src="https://github.com/user-attachments/assets/8fd08d9d-6c71-456c-b051-bd00001995cb" />
 
 <img width="2020" height="2258" alt="image" src="https://github.com/user-attachments/assets/2241c0ba-5770-4e81-a93e-cc441a324d32" />
+
+# 아키텍쳐
+<img width="2720" height="1040" alt="image" src="https://github.com/user-attachments/assets/9b2b757a-9680-4665-8f7b-ce8f3d455c74" />
 
 
 https://github.com/user-attachments/assets/807ea7c0-6832-4723-8687-4ab34fd6fd30
